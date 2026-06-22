@@ -14,21 +14,81 @@ class Calendar
         $ics    = $this->fetchIcs();
         $events = $this->parseIcs($ics);
         $now    = new DateTimeImmutable();
+        $past   = $now->modify('-30 days');
+        $future = $now->modify('+90 days');
 
-        $sessions = array_filter($events, fn($e) =>
-            $e['start'] >= $now->modify('-30 days') &&
-            $e['start'] <= $now->modify('+90 days')
-        );
+        $sessions = [];
+        foreach ($events as $e) {
+            foreach ($this->expand($e, $past, $future) as $occurrence) {
+                $sessions[] = [
+                    'uid'        => $occurrence['uid'],
+                    'title'      => $occurrence['title'],
+                    'start'      => $occurrence['start']->format('c'),
+                    'end'        => $occurrence['end']->format('c'),
+                    'is_current' => $now >= $occurrence['start'] && $now <= $occurrence['end'],
+                ];
+            }
+        }
 
-        usort($sessions, fn($a, $b) => $b['start'] <=> $a['start']);
+        usort($sessions, fn($a, $b) => strcmp($b['start'], $a['start']));
 
-        return array_values(array_map(fn($e) => [
-            'uid'        => $e['uid'],
-            'title'      => $e['title'],
-            'start'      => $e['start']->format('c'),
-            'end'        => $e['end']->format('c'),
-            'is_current' => $now >= $e['start'] && $now <= $e['end'],
-        ], $sessions));
+        return array_values($sessions);
+    }
+
+    /**
+     * Expands a parsed event into occurrences within [from, until].
+     * Handles RRULE FREQ=WEEKLY and FREQ=MONTHLY only.
+     * Non-recurring events return a single-element array (or empty if out of range).
+     */
+    private function expand(array $e, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $duration = $e['start']->diff($e['end']);
+
+        if (!isset($e['rrule'])) {
+            if ($e['start'] >= $from && $e['start'] <= $until) {
+                return [$e];
+            }
+            return [];
+        }
+
+        $rrule  = $e['rrule'];
+        $freq   = $rrule['FREQ'] ?? '';
+        $rrUntil = isset($rrule['UNTIL']) ? $this->parseDate('DTSTART:' . $rrule['UNTIL']) : null;
+        $count  = isset($rrule['COUNT']) ? (int) $rrule['COUNT'] : PHP_INT_MAX;
+        $interval = (int) ($rrule['INTERVAL'] ?? 1);
+
+        $step = match ($freq) {
+            'WEEKLY'  => "P{$interval}W",
+            'MONTHLY' => "P{$interval}M",
+            default   => null,
+        };
+
+        if ($step === null) {
+            return [];
+        }
+
+        // Advance DTSTART to the first occurrence on or after $from
+        $cursor = $e['start'];
+        $n = 0;
+        while ($cursor < $from) {
+            $cursor = $cursor->add(new DateInterval($step));
+            $n++;
+        }
+
+        $occurrences = [];
+        while ($cursor <= $until && $n < $count) {
+            if ($rrUntil !== null && $cursor > $rrUntil) break;
+            $occurrences[] = [
+                'uid'   => $e['uid'] . '_' . $cursor->format('Ymd'),
+                'title' => $e['title'],
+                'start' => $cursor,
+                'end'   => $cursor->add($duration),
+            ];
+            $cursor = $cursor->add(new DateInterval($step));
+            $n++;
+        }
+
+        return $occurrences;
     }
 
     private function fetchIcs(): string
@@ -90,11 +150,22 @@ class Calendar
                 'SUMMARY' => $current['title'] = trim(substr($line, $colonPos + 1)),
                 'DTSTART' => $current['start'] = $this->parseDate($line),
                 'DTEND'   => $current['end']   = $this->parseDate($line),
+                'RRULE'   => $current['rrule'] = $this->parseRrule(trim(substr($line, $colonPos + 1))),
                 default   => null,
             };
         }
 
         return $events;
+    }
+
+    private function parseRrule(string $value): array
+    {
+        $parts = [];
+        foreach (explode(';', $value) as $part) {
+            [$k, $v]    = array_pad(explode('=', $part, 2), 2, '');
+            $parts[$k]  = $v;
+        }
+        return $parts;
     }
 
     private function parseDate(string $line): DateTimeImmutable
