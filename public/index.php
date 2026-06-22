@@ -52,17 +52,29 @@ try {
 $associationName = $config['association_name'];
 $title           = ($t['title'])($associationName);
 
+const COOKIE_NAME = 'jrv_nickname';
+const COOKIE_TTL  = 60 * 60 * 24 * 365; // 1 year
+
+// Read saved nickname from cookie
+$savedNickname = $_COOKIE[COOKIE_NAME] ?? '';
+
 // Handle no-JS form POST (PRG pattern)
 $feedback = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sessionUid = trim($_POST['session_uid'] ?? '');
     $nickname   = trim($_POST['nickname'] ?? '');
+    $remember   = isset($_POST['remember']);
 
     if (!$sessionUid || !$nickname) {
         $feedback = ['type' => 'danger', 'msg' => $t['fill_nickname']];
     } else {
         try {
             (new CheckinService(Database::get()))->checkin($sessionUid, $nickname);
+            if ($remember) {
+                setcookie(COOKIE_NAME, $nickname, time() + COOKIE_TTL, '/', '', false, false);
+            } elseif ($savedNickname !== '') {
+                setcookie(COOKIE_NAME, '', time() - 1, '/');
+            }
             header('Location: /?checkin=ok&name=' . urlencode($nickname) . '&lang=' . $lang);
             exit;
         } catch (RuntimeException $e) {
@@ -135,12 +147,13 @@ $hasIntl = extension_loaded('intl');
         <label for="nickname" class="form-label"><?= $t['nickname_label'] ?></label>
         <input id="nickname" name="nickname" type="text" class="form-control"
                autocomplete="off" placeholder="<?= $t['nickname_ph'] ?>"
-               list="suggestions" required>
+               list="suggestions" value="<?= htmlspecialchars($savedNickname) ?>" required>
         <datalist id="suggestions"></datalist>
       </div>
 
       <div class="form-check mb-3">
-        <input id="remember" type="checkbox" class="form-check-input">
+        <input id="remember" name="remember" type="checkbox" class="form-check-input"
+               <?= $savedNickname !== '' ? 'checked' : '' ?>>
         <label for="remember" class="form-check-label"><?= $t['remember'] ?></label>
       </div>
 
@@ -201,18 +214,17 @@ $hasIntl = extension_loaded('intl');
     setTimeout(() => el.remove(), 4000);
   }
 
-  // Restore saved nickname
-  const NICKNAME_KEY = 'jrv_nickname';
-  const saved = localStorage.getItem(NICKNAME_KEY);
-  if (saved) {
-    document.getElementById('nickname').value = saved;
-    document.getElementById('remember').checked = true;
-  }
+  // Cookie helpers
+  const COOKIE_NAME = 'jrv_nickname';
+  const getCookie   = () => document.cookie.split('; ').find(r => r.startsWith(COOKIE_NAME + '='))?.split('=')[1] ?? '';
+  const setCookie   = v  => document.cookie = `${COOKIE_NAME}=${encodeURIComponent(v)}; max-age=31536000; path=/; SameSite=Strict`;
+  const deleteCookie= () => document.cookie = `${COOKIE_NAME}=; max-age=0; path=/`;
 
-  // Sync checkbox with saved value
+  // Sync checkbox with cookie value as user types
+  // (field and checkbox are pre-filled server-side; JS only syncs on subsequent input)
   document.getElementById('nickname').addEventListener('input', ({ target }) => {
     const checkbox = document.getElementById('remember');
-    const matches  = target.value.trim() === (localStorage.getItem(NICKNAME_KEY) ?? '');
+    const matches  = target.value.trim() === decodeURIComponent(getCookie());
     if (checkbox.checked !== matches) checkbox.checked = matches;
   });
 
@@ -246,7 +258,7 @@ $hasIntl = extension_loaded('intl');
       nickname,
     });
     if (res.ok) {
-      if (document.getElementById('remember').checked) localStorage.setItem(NICKNAME_KEY, nickname);
+      if (document.getElementById('remember').checked) setCookie(nickname); else deleteCookie();
       showFeedback(t.checked_in(res.nickname), 'success');
       document.getElementById('nickname').value = '';
     } else if (res.error?.includes('Already')) {
