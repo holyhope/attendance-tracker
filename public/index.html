@@ -21,42 +21,100 @@
       font-size: 1rem; font-weight: 500; border-radius: 8px;
       cursor: pointer; border: none; transition: background .15s;
     }
-    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary   { background: #2563eb; color: white; }
     .btn-primary:hover { background: #1d4ed8; }
     .btn-secondary { background: white; color: #2563eb; border: 1.5px solid #2563eb; margin-top: .75rem; }
     .btn-secondary:hover { background: #eff6ff; }
     #feedback { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: .9rem; display: none; }
     .success { background: #dcfce7; color: #166534; }
     .error   { background: #fee2e2; color: #991b1b; }
-    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 1.75rem 0; }
+
+    /* Mode-based visibility */
+    [data-mode="self"]  .proxy-only { display: none; }
+    [data-mode="proxy"] .self-only  { display: none; }
   </style>
 </head>
 <body>
-<main>
-  <h1>Pointage JRV</h1>
+<main data-mode="self">
+  <h1 data-i18n="title"></h1>
 
   <div id="feedback"></div>
 
-  <label for="session">Séance</label>
+  <label for="session" data-i18n="session_label"></label>
   <select id="session"></select>
 
-  <label for="name">Votre nom</label>
-  <input id="name" type="text" autocomplete="off" placeholder="Prénom Nom" list="suggestions">
-  <datalist id="suggestions"></datalist>
+  <!-- Self mode only -->
+  <div class="self-only">
+    <label for="nickname" data-i18n="nickname_label"></label>
+    <input id="nickname" type="text" autocomplete="off" list="suggestions">
+    <datalist id="suggestions"></datalist>
+    <button class="btn btn-primary self-only" id="btn-self" data-i18n="btn_self"></button>
+    <button class="btn btn-secondary self-only" id="btn-proxy-toggle" data-i18n="btn_proxy_toggle"></button>
+  </div>
 
-  <button class="btn btn-primary" id="btn-self">Pointer ma présence</button>
-  <button class="btn btn-secondary" id="btn-proxy-toggle">Pointer quelqu'un d'autre</button>
-
-  <div id="proxy-section" hidden>
-    <hr class="divider">
-    <label for="proxy-name">Nom de la personne</label>
-    <input id="proxy-name" type="text" autocomplete="off" placeholder="Prénom Nom" list="proxy-suggestions">
+  <!-- Proxy mode only -->
+  <div class="proxy-only">
+    <label for="proxy-nickname" data-i18n="proxy_label"></label>
+    <input id="proxy-nickname" type="text" autocomplete="off" list="proxy-suggestions">
     <datalist id="proxy-suggestions"></datalist>
-    <button class="btn btn-primary" id="btn-proxy">Valider la présence</button>
+    <button class="btn btn-primary" id="btn-proxy" data-i18n="btn_proxy"></button>
+    <button class="btn btn-secondary" id="btn-back" data-i18n="btn_back"></button>
   </div>
 </main>
 
 <script>
+  // --- i18n ---
+  const translations = {
+    fr: {
+      title:           "Pointage JRV",
+      session_label:   "Séance",
+      nickname_label:  "Votre pseudonyme",
+      nickname_ph:     "Pseudo",
+      btn_self:        "Pointer ma présence",
+      btn_proxy_toggle:"Pointer quelqu'un d'autre",
+      proxy_label:     "Pseudonyme de la personne",
+      proxy_ph:        "Pseudo",
+      btn_proxy:       "Valider la présence",
+      btn_back:        "Retour",
+      checked_in:      name => `Présence enregistrée pour ${name}.`,
+      fill_nickname:   "Entrez votre pseudonyme.",
+      fill_proxy:      "Entrez le pseudonyme de la personne.",
+      already:         "Déjà pointé pour cette séance.",
+      err_generic:     "Une erreur est survenue.",
+    },
+    en: {
+      title:           "JRV Attendance",
+      session_label:   "Session",
+      nickname_label:  "Your nickname",
+      nickname_ph:     "Nickname",
+      btn_self:        "Check in",
+      btn_proxy_toggle:"Check someone else in",
+      proxy_label:     "Person's nickname",
+      proxy_ph:        "Nickname",
+      btn_proxy:       "Confirm check-in",
+      btn_back:        "Back",
+      checked_in:      name => `Checked in: ${name}.`,
+      fill_nickname:   "Enter your nickname.",
+      fill_proxy:      "Enter the person's nickname.",
+      already:         "Already checked in for this session.",
+      err_generic:     "An error occurred.",
+    },
+  };
+
+  const lang = (navigator.language || 'fr').slice(0, 2);
+  const t    = translations[lang] ?? translations.fr;
+
+  document.documentElement.lang = lang;
+  document.title = t.title;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (typeof t[key] === 'string') el.textContent = t[key];
+  });
+  document.getElementById('nickname').placeholder       = t.nickname_ph;
+  document.getElementById('proxy-nickname').placeholder = t.proxy_ph;
+
+  // --- Helpers ---
+  const main = document.querySelector('main');
   const get  = path => fetch(path).then(r => r.json());
   const post = (path, data) => fetch(path, {
     method: 'POST',
@@ -74,13 +132,14 @@
 
   function formatSession(s) {
     const d = new Date(s.start);
-    const label = d.toLocaleDateString('fr-FR', {
+    return d.toLocaleDateString(navigator.language, {
       weekday: 'long', day: 'numeric', month: 'long',
-    }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    return s.title ? `${label} — ${s.title}` : label;
+    }) + ' ' + d.toLocaleTimeString(navigator.language, {
+      hour: '2-digit', minute: '2-digit',
+    }) + (s.title ? ` — ${s.title}` : '');
   }
 
-  // Load sessions
+  // --- Sessions ---
   get('/api/sessions.php').then(({ sessions = [] }) => {
     const sel = document.getElementById('session');
     sessions.forEach(s => {
@@ -92,7 +151,7 @@
     });
   });
 
-  // Autocomplete
+  // --- Autocomplete ---
   function autocomplete(inputId, datalistId) {
     let timer;
     document.getElementById(inputId).addEventListener('input', ({ target }) => {
@@ -112,48 +171,54 @@
       }, 200);
     });
   }
-  autocomplete('name', 'suggestions');
-  autocomplete('proxy-name', 'proxy-suggestions');
+  autocomplete('nickname', 'suggestions');
+  autocomplete('proxy-nickname', 'proxy-suggestions');
 
-  // Self check-in
+  // --- Self check-in ---
   document.getElementById('btn-self').addEventListener('click', async () => {
-    const nickname = document.getElementById('name').value.trim();
-    if (!nickname) { showFeedback('Entrez votre nom.', 'error'); return; }
+    const nickname = document.getElementById('nickname').value.trim();
+    if (!nickname) { showFeedback(t.fill_nickname, 'error'); return; }
     const res = await post('/api/checkin.php', {
       session_uid: document.getElementById('session').value,
       nickname,
     });
     if (res.ok) {
-      showFeedback(`Présence enregistrée pour ${res.nickname}.`, 'success');
-      document.getElementById('name').value = '';
+      showFeedback(t.checked_in(res.nickname), 'success');
+      document.getElementById('nickname').value = '';
+    } else if (res.error?.includes('Already')) {
+      showFeedback(t.already, 'error');
     } else {
-      showFeedback(res.error || 'Erreur.', 'error');
+      showFeedback(t.err_generic, 'error');
     }
   });
 
-  // Proxy section toggle
+  // --- Mode toggle ---
   document.getElementById('btn-proxy-toggle').addEventListener('click', () => {
-    const s = document.getElementById('proxy-section');
-    s.hidden = !s.hidden;
+    main.dataset.mode = 'proxy';
+    document.getElementById('proxy-nickname').focus();
   });
 
-  // Proxy check-in
+  document.getElementById('btn-back').addEventListener('click', () => {
+    main.dataset.mode = 'self';
+    document.getElementById('proxy-nickname').value = '';
+  });
+
+  // --- Proxy check-in ---
   document.getElementById('btn-proxy').addEventListener('click', async () => {
-    const nickname      = document.getElementById('proxy-name').value.trim();
-    const checkedInBy   = document.getElementById('name').value.trim();
-    if (!nickname)    { showFeedback('Entrez le nom de la personne à pointer.', 'error'); return; }
-    if (!checkedInBy) { showFeedback('Entrez également votre propre nom.', 'error'); return; }
+    const nickname = document.getElementById('proxy-nickname').value.trim();
+    if (!nickname) { showFeedback(t.fill_proxy, 'error'); return; }
     const res = await post('/api/checkin.php', {
       session_uid: document.getElementById('session').value,
       nickname,
-      checked_in_by_nickname: checkedInBy,
     });
     if (res.ok) {
-      showFeedback(`Présence enregistrée pour ${res.nickname}.`, 'success');
-      document.getElementById('proxy-name').value = '';
-      document.getElementById('proxy-section').hidden = true;
+      showFeedback(t.checked_in(res.nickname), 'success');
+      document.getElementById('proxy-nickname').value = '';
+      main.dataset.mode = 'self';
+    } else if (res.error?.includes('Already')) {
+      showFeedback(t.already, 'error');
     } else {
-      showFeedback(res.error || 'Erreur.', 'error');
+      showFeedback(t.err_generic, 'error');
     }
   });
 </script>
