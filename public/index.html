@@ -22,34 +22,17 @@
       <select id="session" class="form-select"></select>
     </div>
 
-    <!-- Self mode -->
-    <div id="self-section">
-      <div class="mb-3">
-        <label for="nickname" class="form-label" data-i18n="nickname_label"></label>
-        <input id="nickname" type="text" class="form-control" autocomplete="off" list="suggestions">
-        <datalist id="suggestions"></datalist>
-      </div>
-      <div class="form-check mb-3">
-        <input id="remember" type="checkbox" class="form-check-input">
-        <label for="remember" class="form-check-label" data-i18n="remember"></label>
-      </div>
-      <div class="d-grid gap-2">
-        <button class="btn btn-primary" id="btn-self" data-i18n="btn_self"></button>
-        <button class="btn btn-outline-primary" id="btn-proxy-toggle" data-i18n="btn_proxy_toggle"></button>
-      </div>
+    <div class="mb-3">
+      <label for="nickname" class="form-label" data-i18n="nickname_label"></label>
+      <input id="nickname" type="text" class="form-control" autocomplete="off" list="suggestions">
+      <datalist id="suggestions"></datalist>
     </div>
-
-    <!-- Proxy mode -->
-    <div id="proxy-section" class="d-none">
-      <div class="mb-3">
-        <label for="proxy-nickname" class="form-label" data-i18n="proxy_label"></label>
-        <input id="proxy-nickname" type="text" class="form-control" autocomplete="off" list="proxy-suggestions">
-        <datalist id="proxy-suggestions"></datalist>
-      </div>
-      <div class="d-grid gap-2">
-        <button class="btn btn-primary" id="btn-proxy" data-i18n="btn_proxy"></button>
-        <button class="btn btn-outline-secondary" id="btn-back" data-i18n="btn_back"></button>
-      </div>
+    <div class="form-check mb-3">
+      <input id="remember" type="checkbox" class="form-check-input">
+      <label for="remember" class="form-check-label" data-i18n="remember"></label>
+    </div>
+    <div class="d-grid">
+      <button class="btn btn-primary" id="btn-checkin" data-i18n="btn_checkin"></button>
     </div>
   </div>
 </main>
@@ -58,40 +41,28 @@
   // --- i18n ---
   const translations = {
     fr: {
-      title:           "Pointage JRV",
-      session_label:   "Séance",
-      nickname_label:  "Votre pseudonyme",
-      nickname_ph:     "Pseudo",
-      remember:        "Mémoriser mon pseudonyme",
-      btn_self:        "Pointer ma présence",
-      btn_proxy_toggle:"Pointer quelqu'un d'autre",
-      proxy_label:     "Pseudonyme de la personne",
-      proxy_ph:        "Pseudo",
-      btn_proxy:       "Valider la présence",
-      btn_back:        "Retour",
-      checked_in:      name => `Présence enregistrée pour ${name}.`,
-      fill_nickname:   "Entrez votre pseudonyme.",
-      fill_proxy:      "Entrez le pseudonyme de la personne.",
-      already:         "Déjà pointé pour cette séance.",
-      err_generic:     "Une erreur est survenue.",
+      title:          "Pointage JRV",
+      session_label:  "Séance",
+      nickname_label: "Pseudonyme",
+      nickname_ph:    "Pseudo",
+      remember:       "Mémoriser mon pseudonyme",
+      btn_checkin:    "Pointer la présence",
+      checked_in:     name => `Présence enregistrée pour ${name}.`,
+      fill_nickname:  "Entrez un pseudonyme.",
+      already:        "Déjà pointé pour cette séance.",
+      err_generic:    "Une erreur est survenue.",
     },
     en: {
-      title:           "JRV Attendance",
-      session_label:   "Session",
-      nickname_label:  "Your nickname",
-      nickname_ph:     "Nickname",
-      remember:        "Remember my nickname",
-      btn_self:        "Check in",
-      btn_proxy_toggle:"Check someone else in",
-      proxy_label:     "Person's nickname",
-      proxy_ph:        "Nickname",
-      btn_proxy:       "Confirm check-in",
-      btn_back:        "Back",
-      checked_in:      name => `Checked in: ${name}.`,
-      fill_nickname:   "Enter your nickname.",
-      fill_proxy:      "Enter the person's nickname.",
-      already:         "Already checked in for this session.",
-      err_generic:     "An error occurred.",
+      title:          "JRV Attendance",
+      session_label:  "Session",
+      nickname_label: "Nickname",
+      nickname_ph:    "Nickname",
+      remember:       "Remember my nickname",
+      btn_checkin:    "Check in",
+      checked_in:     name => `Checked in: ${name}.`,
+      fill_nickname:  "Enter a nickname.",
+      already:        "Already checked in for this session.",
+      err_generic:    "An error occurred.",
     },
   };
 
@@ -104,8 +75,7 @@
     const key = el.dataset.i18n;
     if (typeof t[key] === 'string') el.textContent = t[key];
   });
-  document.getElementById('nickname').placeholder       = t.nickname_ph;
-  document.getElementById('proxy-nickname').placeholder = t.proxy_ph;
+  document.getElementById('nickname').placeholder = t.nickname_ph;
 
   // --- Helpers ---
   const get  = path => fetch(path).then(r => r.json());
@@ -172,7 +142,6 @@
     });
   }
   autocomplete('nickname', 'suggestions');
-  autocomplete('proxy-nickname', 'proxy-suggestions');
 
   // Sync "remember" checkbox with saved value as user types
   document.getElementById('nickname').addEventListener('input', ({ target }) => {
@@ -181,21 +150,8 @@
     if (checkbox.checked !== matches) checkbox.checked = matches;
   });
 
-  // --- Mode toggle ---
-  function setMode(mode) {
-    document.getElementById('self-section').classList.toggle('d-none', mode === 'proxy');
-    document.getElementById('proxy-section').classList.toggle('d-none', mode === 'self');
-    if (mode === 'proxy') document.getElementById('proxy-nickname').focus();
-  }
-
-  document.getElementById('btn-proxy-toggle').addEventListener('click', () => setMode('proxy'));
-  document.getElementById('btn-back').addEventListener('click', () => {
-    document.getElementById('proxy-nickname').value = '';
-    setMode('self');
-  });
-
-  // --- Self check-in ---
-  document.getElementById('btn-self').addEventListener('click', async () => {
+  // --- Check-in ---
+  document.getElementById('btn-checkin').addEventListener('click', async () => {
     const nickname = document.getElementById('nickname').value.trim();
     if (!nickname) { showFeedback(t.fill_nickname, 'error'); return; }
     const res = await post('/api/checkin.php', {
@@ -206,25 +162,6 @@
       if (document.getElementById('remember').checked) localStorage.setItem(NICKNAME_KEY, nickname);
       showFeedback(t.checked_in(res.nickname), 'success');
       document.getElementById('nickname').value = '';
-    } else if (res.error?.includes('Already')) {
-      showFeedback(t.already, 'error');
-    } else {
-      showFeedback(t.err_generic, 'error');
-    }
-  });
-
-  // --- Proxy check-in ---
-  document.getElementById('btn-proxy').addEventListener('click', async () => {
-    const nickname = document.getElementById('proxy-nickname').value.trim();
-    if (!nickname) { showFeedback(t.fill_proxy, 'error'); return; }
-    const res = await post('/api/checkin.php', {
-      session_uid: document.getElementById('session').value,
-      nickname,
-    });
-    if (res.ok) {
-      showFeedback(t.checked_in(res.nickname), 'success');
-      document.getElementById('proxy-nickname').value = '';
-      setMode('self');
     } else if (res.error?.includes('Already')) {
       showFeedback(t.already, 'error');
     } else {
