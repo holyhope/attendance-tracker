@@ -174,12 +174,11 @@
   autocomplete('nickname', 'suggestions');
   autocomplete('proxy-nickname', 'proxy-suggestions');
 
-  // Uncheck "remember" if nickname diverges from saved value
+  // Sync "remember" checkbox with saved value as user types
   document.getElementById('nickname').addEventListener('input', ({ target }) => {
     const checkbox = document.getElementById('remember');
-    if (checkbox.checked && target.value.trim() !== (localStorage.getItem(NICKNAME_KEY) ?? '')) {
-      checkbox.checked = false;
-    }
+    const matches  = target.value.trim() === (localStorage.getItem(NICKNAME_KEY) ?? '');
+    if (checkbox.checked !== matches) checkbox.checked = matches;
   });
 
   // --- Mode toggle ---
