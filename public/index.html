@@ -139,6 +139,11 @@
     }) + (s.title ? ` — ${s.title}` : '');
   }
 
+  // --- Saved nickname ---
+  const NICKNAME_KEY = 'jrv_nickname';
+  const saved = localStorage.getItem(NICKNAME_KEY);
+  if (saved) document.getElementById('nickname').value = saved;
+
   // --- Sessions ---
   get('/api/sessions.php').then(({ sessions = [] }) => {
     const sel = document.getElementById('session');
@@ -183,6 +188,7 @@
       nickname,
     });
     if (res.ok) {
+      localStorage.setItem(NICKNAME_KEY, nickname);
       showFeedback(t.checked_in(res.nickname), 'success');
       document.getElementById('nickname').value = '';
     } else if (res.error?.includes('Already')) {
