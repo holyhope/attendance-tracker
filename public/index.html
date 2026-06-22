@@ -4,68 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pointage JRV</title>
+  <link rel="stylesheet" href="/assets/bootstrap.min.css">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f9fafb; min-height: 100dvh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem; }
-    main { background: white; border-radius: 12px; padding: 2rem; width: 100%; max-width: 420px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    h1 { font-size: 1.4rem; margin-bottom: 1.75rem; color: #111; }
-    label { display: block; font-size: .875rem; font-weight: 500; color: #374151; margin-bottom: .375rem; }
-    input, select {
-      width: 100%; padding: .75rem 1rem; font-size: 1rem;
-      border: 1px solid #d1d5db; border-radius: 8px; margin-bottom: 1.25rem;
-      background: white; color: #111; appearance: none;
-    }
-    input:focus, select:focus { outline: 2px solid #2563eb; border-color: transparent; }
-    .btn {
-      display: block; width: 100%; padding: .875rem;
-      font-size: 1rem; font-weight: 500; border-radius: 8px;
-      cursor: pointer; border: none; transition: background .15s;
-    }
-    .btn-primary   { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-secondary { background: white; color: #2563eb; border: 1.5px solid #2563eb; margin-top: .75rem; }
-    .btn-secondary:hover { background: #eff6ff; }
-    #feedback { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: .9rem; display: none; }
-    .success { background: #dcfce7; color: #166534; }
-    .error   { background: #fee2e2; color: #991b1b; }
-
-    .remember-label { display: flex; align-items: center; gap: .5rem; font-size: .875rem; color: #374151; margin-bottom: 1.25rem; cursor: pointer; }
-    .remember-label input { width: auto; margin: 0; }
-
-    /* Mode-based visibility */
-    [data-mode="self"]  .proxy-only { display: none; }
-    [data-mode="proxy"] .self-only  { display: none; }
+    body { background: #f9fafb; }
+    /* Mode-based visibility handled via JS + d-none */
   </style>
 </head>
-<body>
-<main data-mode="self">
-  <h1 data-i18n="title"></h1>
+<body class="py-4 px-3">
+<main class="card mx-auto" style="max-width:420px">
+  <div class="card-body">
+    <h1 class="h4 mb-4" data-i18n="title"></h1>
 
-  <div id="feedback"></div>
+    <div id="feedback" class="alert d-none" role="alert"></div>
 
-  <label for="session" data-i18n="session_label"></label>
-  <select id="session"></select>
+    <div class="mb-3">
+      <label for="session" class="form-label" data-i18n="session_label"></label>
+      <select id="session" class="form-select"></select>
+    </div>
 
-  <!-- Self mode only -->
-  <div class="self-only">
-    <label for="nickname" data-i18n="nickname_label"></label>
-    <input id="nickname" type="text" autocomplete="off" list="suggestions">
-    <datalist id="suggestions"></datalist>
-    <label class="remember-label">
-      <input id="remember" type="checkbox">
-      <span data-i18n="remember"></span>
-    </label>
-    <button class="btn btn-primary self-only" id="btn-self" data-i18n="btn_self"></button>
-    <button class="btn btn-secondary self-only" id="btn-proxy-toggle" data-i18n="btn_proxy_toggle"></button>
-  </div>
+    <!-- Self mode -->
+    <div id="self-section">
+      <div class="mb-3">
+        <label for="nickname" class="form-label" data-i18n="nickname_label"></label>
+        <input id="nickname" type="text" class="form-control" autocomplete="off" list="suggestions">
+        <datalist id="suggestions"></datalist>
+      </div>
+      <div class="form-check mb-3">
+        <input id="remember" type="checkbox" class="form-check-input">
+        <label for="remember" class="form-check-label" data-i18n="remember"></label>
+      </div>
+      <div class="d-grid gap-2">
+        <button class="btn btn-primary" id="btn-self" data-i18n="btn_self"></button>
+        <button class="btn btn-outline-primary" id="btn-proxy-toggle" data-i18n="btn_proxy_toggle"></button>
+      </div>
+    </div>
 
-  <!-- Proxy mode only -->
-  <div class="proxy-only">
-    <label for="proxy-nickname" data-i18n="proxy_label"></label>
-    <input id="proxy-nickname" type="text" autocomplete="off" list="proxy-suggestions">
-    <datalist id="proxy-suggestions"></datalist>
-    <button class="btn btn-primary" id="btn-proxy" data-i18n="btn_proxy"></button>
-    <button class="btn btn-secondary" id="btn-back" data-i18n="btn_back"></button>
+    <!-- Proxy mode -->
+    <div id="proxy-section" class="d-none">
+      <div class="mb-3">
+        <label for="proxy-nickname" class="form-label" data-i18n="proxy_label"></label>
+        <input id="proxy-nickname" type="text" class="form-control" autocomplete="off" list="proxy-suggestions">
+        <datalist id="proxy-suggestions"></datalist>
+      </div>
+      <div class="d-grid gap-2">
+        <button class="btn btn-primary" id="btn-proxy" data-i18n="btn_proxy"></button>
+        <button class="btn btn-outline-secondary" id="btn-back" data-i18n="btn_back"></button>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -123,7 +108,6 @@
   document.getElementById('proxy-nickname').placeholder = t.proxy_ph;
 
   // --- Helpers ---
-  const main = document.querySelector('main');
   const get  = path => fetch(path).then(r => r.json());
   const post = (path, data) => fetch(path, {
     method: 'POST',
@@ -134,9 +118,8 @@
   function showFeedback(msg, type) {
     const el = document.getElementById('feedback');
     el.textContent = msg;
-    el.className = type;
-    el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 4000);
+    el.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+    setTimeout(() => el.classList.add('d-none'), 4000);
   }
 
   function formatSession(s) {
@@ -191,6 +174,19 @@
   autocomplete('nickname', 'suggestions');
   autocomplete('proxy-nickname', 'proxy-suggestions');
 
+  // --- Mode toggle ---
+  function setMode(mode) {
+    document.getElementById('self-section').classList.toggle('d-none', mode === 'proxy');
+    document.getElementById('proxy-section').classList.toggle('d-none', mode === 'self');
+    if (mode === 'proxy') document.getElementById('proxy-nickname').focus();
+  }
+
+  document.getElementById('btn-proxy-toggle').addEventListener('click', () => setMode('proxy'));
+  document.getElementById('btn-back').addEventListener('click', () => {
+    document.getElementById('proxy-nickname').value = '';
+    setMode('self');
+  });
+
   // --- Self check-in ---
   document.getElementById('btn-self').addEventListener('click', async () => {
     const nickname = document.getElementById('nickname').value.trim();
@@ -210,17 +206,6 @@
     }
   });
 
-  // --- Mode toggle ---
-  document.getElementById('btn-proxy-toggle').addEventListener('click', () => {
-    main.dataset.mode = 'proxy';
-    document.getElementById('proxy-nickname').focus();
-  });
-
-  document.getElementById('btn-back').addEventListener('click', () => {
-    main.dataset.mode = 'self';
-    document.getElementById('proxy-nickname').value = '';
-  });
-
   // --- Proxy check-in ---
   document.getElementById('btn-proxy').addEventListener('click', async () => {
     const nickname = document.getElementById('proxy-nickname').value.trim();
@@ -232,7 +217,7 @@
     if (res.ok) {
       showFeedback(t.checked_in(res.nickname), 'success');
       document.getElementById('proxy-nickname').value = '';
-      main.dataset.mode = 'self';
+      setMode('self');
     } else if (res.error?.includes('Already')) {
       showFeedback(t.already, 'error');
     } else {

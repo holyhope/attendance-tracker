@@ -1,0 +1,25 @@
+{
+  "name": "jrv-pointage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "sass build/bootstrap-custom.scss public/assets/bootstrap.min.css --style=compressed --load-path=node_modules --quiet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jou-Retz-Vous/attendance-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jou-Retz-Vous/attendance-tracker/issues"
+  },
+  "homepage": "https://github.com/Jou-Retz-Vous/attendance-tracker#readme",
+  "devDependencies": {
+    "bootstrap": "^5.3.8",
+    "sass": "^1.101.0"
+  }
+}
