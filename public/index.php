@@ -130,7 +130,7 @@ $hasIntl = extension_loaded('intl');
     </div>
     <?php endif ?>
 
-    <form method="POST" action="" id="checkin-form" novalidate>
+    <form method="POST" action="" id="checkin-form">
       <div class="mb-3">
         <label for="session" class="form-label"><?= $t['session_label'] ?></label>
         <select id="session" name="session_uid" class="form-select" required>
