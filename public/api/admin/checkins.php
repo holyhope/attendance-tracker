@@ -3,9 +3,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../../src/helpers.php';
 require_once __DIR__ . '/../../../src/Database.php';
-require_once __DIR__ . '/../../../src/Auth.php';
-
-Auth::require();
 
 $sessionUid = trim($_GET['session_uid'] ?? '');
 $format     = strtolower(trim($_GET['format'] ?? 'json'));

@@ -1,3 +1,5 @@
 config.php
 data/*.db
 cache/*.ics.cache
+node_modules
+.htpasswd
