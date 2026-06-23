@@ -4,60 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Pointage JRV</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f9fafb; padding: 2rem 1rem; }
-    main { max-width: 640px; margin: 0 auto; }
-    h1 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #111; }
-    label { display: block; font-size: .875rem; font-weight: 500; color: #374151; margin-bottom: .375rem; }
-    input, select {
-      width: 100%; padding: .75rem 1rem; font-size: 1rem;
-      border: 1px solid #d1d5db; border-radius: 8px; margin-bottom: 1.25rem;
-      background: white; appearance: none;
-    }
-    input:focus, select:focus { outline: 2px solid #2563eb; border-color: transparent; }
-    .btn { padding: .6rem 1.25rem; font-size: .9rem; font-weight: 500; border-radius: 8px; cursor: pointer; border: none; }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-danger  { background: white; color: #dc2626; border: 1.5px solid #dc2626; }
-    .btn-danger:hover  { background: #fef2f2; }
-    .btn-export  { background: white; color: #374151; border: 1.5px solid #d1d5db; margin-bottom: 1rem; }
-    #auth-section { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    #app { display: none; }
-    #feedback { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: .9rem; display: none; }
-    .success { background: #dcfce7; color: #166534; }
-    .error   { background: #fee2e2; color: #991b1b; }
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    th { background: #f3f4f6; text-align: left; padding: .75rem 1rem; font-size: .8rem; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
-    td { padding: .75rem 1rem; border-top: 1px solid #f3f4f6; font-size: .9rem; }
-    td:last-child { text-align: right; }
-    .count { font-size: .875rem; color: #6b7280; margin-bottom: .75rem; }
-  </style>
+  <link rel="stylesheet" href="/assets/bootstrap.min.css">
 </head>
-<body>
-<main>
-  <h1>Administration — Pointage JRV</h1>
+<body class="bg-light py-4 px-3">
+<main class="mx-auto" style="max-width:680px">
+  <h1 class="h4 mb-4">Administration — Pointage JRV</h1>
 
-  <div id="feedback"></div>
+  <div id="feedback" class="alert d-none" role="alert"></div>
 
-  <div id="auth-section">
-    <label for="token">Mot de passe administrateur</label>
-    <input id="token" type="password" placeholder="Token">
-    <button class="btn btn-primary" id="btn-login">Connexion</button>
+  <!-- Auth -->
+  <div id="auth-section" class="card mb-4">
+    <div class="card-body">
+      <label for="token" class="form-label">Mot de passe administrateur</label>
+      <input id="token" type="password" class="form-control mb-3" placeholder="Token">
+      <button class="btn btn-primary" id="btn-login">Connexion</button>
+    </div>
   </div>
 
-  <div id="app">
-    <label for="session">Séance</label>
-    <select id="session"></select>
+  <!-- App -->
+  <div id="app" class="d-none">
+    <div class="mb-3">
+      <label for="session" class="form-label">Séance</label>
+      <select id="session" class="form-select"></select>
+    </div>
 
-    <button class="btn btn-export" id="btn-export">Exporter CSV</button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-secondary small" id="count"></span>
 
-    <p class="count" id="count"></p>
+      <!-- Export dropdown -->
+      <div class="btn-group">
+        <button class="btn btn-outline-secondary btn-sm" id="btn-export">Exporter</button>
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                id="export-dropdown-toggle" aria-expanded="false">
+          <span class="visually-hidden">Choisir le format</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" id="export-menu">
+          <li><a class="dropdown-item active" href="#" data-format="csv">CSV</a></li>
+          <li><a class="dropdown-item" href="#" data-format="json">JSON</a></li>
+          <li><a class="dropdown-item" href="#" data-format="grist">Grist</a></li>
+        </ul>
+      </div>
+    </div>
 
-    <table id="table">
-      <thead>
+    <table class="table table-bordered table-hover bg-white rounded shadow-sm">
+      <thead class="table-light">
         <tr>
-          <th>Nom</th>
+          <th>Pseudonyme</th>
           <th>Heure</th>
           <th>Pointé par</th>
           <th></th>
@@ -69,35 +61,32 @@
 </main>
 
 <script>
-  let token = '';
+  let token  = '';
+  let format = 'csv';
 
-  const authGet  = path => fetch(path, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
-  const authPost = (path, data) => fetch(path, {
+  const authFetch = (path, opts = {}) => fetch(path, {
+    ...opts,
+    headers: { ...(opts.headers ?? {}), Authorization: `Bearer ${token}` },
+  });
+  const authGet  = path => authFetch(path).then(r => r.json());
+  const authPost = (path, data) => authFetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   }).then(r => r.json());
-
-  const get = path => fetch(path).then(r => r.json());
 
   function showFeedback(msg, type) {
     const el = document.getElementById('feedback');
     el.textContent = msg;
-    el.className = type;
-    el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 4000);
+    el.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+    setTimeout(() => el.classList.add('d-none'), 4000);
   }
 
   function formatSession(s) {
     const d = new Date(s.start);
-    const label = d.toLocaleDateString('fr-FR', {
-      weekday: 'long', day: 'numeric', month: 'long',
-    }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    return s.title ? `${label} — ${s.title}` : label;
-  }
-
-  function formatTime(iso) {
-    return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+      + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      + (s.title ? ` — ${s.title}` : '');
   }
 
   function renderCheckins(checkins) {
@@ -106,13 +95,13 @@
     document.getElementById('count').textContent = `${checkins.length} présence(s)`;
     checkins.forEach(c => {
       const tr = document.createElement('tr');
-      tr.dataset.id = c.id;
       tr.innerHTML = `
         <td>${c.nickname}</td>
-        <td>${formatTime(c.created_at)}</td>
+        <td>${new Date(c.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</td>
         <td>${c.checked_in_by ?? '—'}</td>
-        <td><button class="btn btn-danger" data-id="${c.id}">Supprimer</button></td>
-      `;
+        <td class="text-end">
+          <button class="btn btn-outline-danger btn-sm" data-id="${c.id}">Supprimer</button>
+        </td>`;
       tbody.appendChild(tr);
     });
   }
@@ -127,15 +116,14 @@
   // Login
   document.getElementById('btn-login').addEventListener('click', async () => {
     token = document.getElementById('token').value.trim();
-    const sessions = await get('/api/sessions.php').then(r => r.sessions ?? []);
+    const { sessions = [] } = await fetch('/api/sessions.php').then(r => r.json());
 
-    // Validate token with a real admin call
-    const sel = document.getElementById('session');
     if (sessions.length > 0) {
       const test = await authGet(`/api/admin/checkins.php?session_uid=${encodeURIComponent(sessions[0].uid)}`);
       if (!test.ok) { showFeedback('Token invalide.', 'error'); token = ''; return; }
     }
 
+    const sel = document.getElementById('session');
     sessions.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.uid;
@@ -144,8 +132,8 @@
       sel.appendChild(opt);
     });
 
-    document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    document.getElementById('auth-section').classList.add('d-none');
+    document.getElementById('app').classList.remove('d-none');
     loadCheckins();
   });
 
@@ -166,20 +154,48 @@
     }
   });
 
-  // Export CSV
-  document.getElementById('btn-export').addEventListener('click', () => {
-    const rows = [['Nom', 'Heure', 'Pointé par']];
-    document.querySelectorAll('#tbody tr').forEach(tr => {
-      const cells = tr.querySelectorAll('td');
-      rows.push([cells[0].textContent, cells[1].textContent, cells[2].textContent]);
-    });
-    const csv  = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+  // Export dropdown — vanilla JS toggle (no Bootstrap JS needed)
+  const toggle = document.getElementById('export-dropdown-toggle');
+  const menu   = document.getElementById('export-menu');
+
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = menu.classList.toggle('show');
+    toggle.setAttribute('aria-expanded', open);
+  });
+
+  document.addEventListener('click', () => {
+    menu.classList.remove('show');
+    toggle.setAttribute('aria-expanded', false);
+  });
+
+  menu.addEventListener('click', e => {
+    const item = e.target.closest('[data-format]');
+    if (!item) return;
+    e.preventDefault();
+    menu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    format = item.dataset.format;
+    document.getElementById('btn-export').textContent = `Exporter ${format.toUpperCase()}`;
+    menu.classList.remove('show');
+    toggle.setAttribute('aria-expanded', false);
+  });
+
+  // Export — fetch with auth header → blob download
+  document.getElementById('btn-export').addEventListener('click', async () => {
+    const uid = document.getElementById('session').value;
+    if (!uid) return;
+    const url = `/api/admin/checkins.php?session_uid=${encodeURIComponent(uid)}&format=${format}`;
+    const res = await authFetch(url);
+    if (!res.ok) { showFeedback('Erreur lors de l\'export.', 'error'); return; }
+    const blob = await res.blob();
+    const ext  = format === 'csv' ? 'csv' : 'json';
     const a    = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: `presences-${document.getElementById('session').value.slice(0, 10)}.csv`,
+      href:     URL.createObjectURL(blob),
+      download: `presences-${uid.slice(0, 20)}.${ext}`,
     });
     a.click();
+    URL.revokeObjectURL(a.href);
   });
 </script>
 </body>
