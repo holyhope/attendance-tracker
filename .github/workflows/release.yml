@@ -54,7 +54,7 @@ jobs:
           path: dist/
 
       - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v5
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ vars.FTP_HOST }}
           port: ${{ vars.FTP_PORT }}
