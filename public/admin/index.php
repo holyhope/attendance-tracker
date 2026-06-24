@@ -290,19 +290,10 @@ if ($sessionUid) {
     toggle.setAttribute('aria-expanded', false);
   });
 
-  // Export — fetch → blob download
-  document.getElementById('btn-export').addEventListener('click', async () => {
+  // Export — navigation directe (laisse le Content-Disposition serveur gérer le nom)
+  document.getElementById('btn-export').addEventListener('click', () => {
     if (!sessionUid) return;
-    const res = await fetch(`/api/admin/checkins.php?session_uid=${encodeURIComponent(sessionUid)}&format=${format}`);
-    if (!res.ok) { showFeedback("Erreur lors de l'export.", 'error'); return; }
-    const blob = await res.blob();
-    const ext  = format === 'csv' ? 'csv' : format === 'grist' ? 'grist' : 'json';
-    const a    = Object.assign(document.createElement('a'), {
-      href:     URL.createObjectURL(blob),
-      download: `presences-${sessionUid.slice(0, 20)}.${ext}`,
-    });
-    a.click();
-    URL.revokeObjectURL(a.href);
+    window.location.href = `/api/admin/checkins.php?session_uid=${encodeURIComponent(sessionUid)}&format=${format}`;
   });
 </script>
 </body>
