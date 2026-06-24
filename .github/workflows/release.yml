@@ -51,7 +51,7 @@ jobs:
 
       - name: Inject environment config
         run: |
-          sed -i "s|%%HTPASSWD_PATH%%|${{ vars.HTPASSWD_PATH }}|" dist/www/admin/.htaccess
+          sed -i "s|%%HTPASSWD_PATH%%|/home/${{ vars.FTP_USER }}/.htpasswd|" dist/www/admin/.htaccess
 
       - name: Deploy via FTP
         run: |
