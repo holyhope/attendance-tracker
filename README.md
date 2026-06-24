@@ -1,4 +1,6 @@
-# Pointage — système de présence pour associations
+<img src="public/assets/icon.svg" alt="SPS" width="64" height="64">
+
+# Système de Pointage Simple (SPS)
 
 Une application web légère pour enregistrer les présences aux séances de votre
 association ou de votre salle. Pas de compte à créer, pas d'application à
