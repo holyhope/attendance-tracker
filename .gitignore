@@ -3,3 +3,4 @@ data/*.db
 cache/*.ics.cache
 node_modules
 .htpasswd
+public/assets/

@@ -1,0 +1,28 @@
+name: Deploy to preprod
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: preprod
+    steps:
+      - name: Download release asset
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern "dist.zip" --repo ${{ github.repository }}
+          unzip dist.zip -d dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ vars.FTP_HOST }}
+          port: ${{ vars.FTP_PORT }}
+          username: ${{ vars.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /

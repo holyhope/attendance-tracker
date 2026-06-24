@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
+ini_set('display_errors', '0');
 
 require_once __DIR__ . '/../../../src/helpers.php';
 require_once __DIR__ . '/../../../src/Database.php';
+require_once __DIR__ . '/../../../src/GristExport.php';
 
 $sessionUid = trim($_GET['session_uid'] ?? '');
 $format     = strtolower(trim($_GET['format'] ?? 'json'));
@@ -16,14 +18,9 @@ if (!in_array($format, ['json', 'csv', 'grist'], true)) {
 }
 
 $stmt = Database::get()->prepare("
-    SELECT
-        c.id,
-        c.created_at,
-        a.nickname,
-        p.nickname AS checked_in_by
+    SELECT c.id, c.created_at, a.nickname
     FROM checkins c
     JOIN attendees a ON a.id = c.attendee_id
-    LEFT JOIN attendees p ON p.id = c.checked_in_by
     WHERE c.session_uid = ?
     ORDER BY c.created_at ASC
 ");
@@ -36,26 +33,16 @@ if ($format === 'csv') {
     header('Content-Disposition: attachment; filename="' . $filename . '"');
 
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['nickname', 'checked_in_by', 'created_at']);
+    fputcsv($out, ['nickname', 'created_at']);
     foreach ($rows as $row) {
-        fputcsv($out, [$row['nickname'], $row['checked_in_by'] ?? '', $row['created_at']]);
+        fputcsv($out, [$row['nickname'], $row['created_at']]);
     }
     fclose($out);
     exit;
 }
 
 if ($format === 'grist') {
-    header('Content-Type: application/json');
-    echo json_encode([
-        'records' => array_map(fn($row) => [
-            'fields' => [
-                'nickname'       => $row['nickname'],
-                'checked_in_by'  => $row['checked_in_by'] ?? '',
-                'created_at'     => $row['created_at'],
-            ],
-        ], $rows),
-    ]);
-    exit;
+    export_grist($rows, $sessionUid);
 }
 
 json_ok(['checkins' => $rows]);

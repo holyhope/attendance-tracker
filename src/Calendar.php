@@ -6,33 +6,39 @@ class Calendar
     public function __construct(
         private string $url,
         private string $cachePath,
-        private int    $cacheTtl = 900
+        private int    $cacheTtl    = 900,
+        private array  $filter      = [],
+        private string $labelFormat = '{date} — {title}',
     ) {}
 
-    public function getSessions(): array
+    public function getSessions(string $lang = 'fr'): array
     {
-        $ics    = $this->fetchIcs();
-        $events = $this->parseIcs($ics);
-        $now    = new DateTimeImmutable();
-        $past   = $now->modify('-30 days');
-        $future = $now->modify('+90 days');
+        $ics       = $this->fetchIcs();
+        $events    = $this->parseIcs($ics);
+        $now       = new DateTimeImmutable();
+        $past      = $now->modify('-30 days');
+        $endOfDay  = $now->setTime(23, 59, 59);
 
         $sessions = [];
         foreach ($events as $e) {
-            foreach ($this->expand($e, $past, $future) as $occurrence) {
+            foreach ($this->expand($e, $past, $endOfDay) as $occurrence) {
                 $sessions[] = [
                     'uid'        => $occurrence['uid'],
                     'title'      => $occurrence['title'],
+                    'location'   => $occurrence['location'] ?? '',
                     'start'      => $occurrence['start']->format('c'),
                     'end'        => $occurrence['end']->format('c'),
                     'is_current' => $now >= $occurrence['start'] && $now <= $occurrence['end'],
+                    'label'      => $this->formatLabel($occurrence['start'], $occurrence['title'], $occurrence['location'] ?? '', $lang),
                 ];
             }
         }
 
+        $sessions = $this->applyFilter($sessions, $this->filter);
+
         usort($sessions, fn($a, $b) => strcmp($b['start'], $a['start']));
 
-        return array_values($sessions);
+        return array_values(array_slice($sessions, 0, 10));
     }
 
     /**
@@ -46,7 +52,7 @@ class Calendar
 
         if (!isset($e['rrule'])) {
             if ($e['start'] >= $from && $e['start'] <= $until) {
-                return [$e];
+                return [['uid' => $e['uid'], 'title' => $e['title'], 'location' => $e['location'] ?? '', 'start' => $e['start'], 'end' => $e['end']]];
             }
             return [];
         }
@@ -79,16 +85,74 @@ class Calendar
         while ($cursor <= $until && $n < $count) {
             if ($rrUntil !== null && $cursor > $rrUntil) break;
             $occurrences[] = [
-                'uid'   => $e['uid'] . '_' . $cursor->format('Ymd'),
-                'title' => $e['title'],
-                'start' => $cursor,
-                'end'   => $cursor->add($duration),
+                'uid'      => $e['uid'] . '_' . $cursor->format('Ymd'),
+                'title'    => $e['title'],
+                'location' => $e['location'] ?? '',
+                'start'    => $cursor,
+                'end'      => $cursor->add($duration),
             ];
             $cursor = $cursor->add(new DateInterval($step));
             $n++;
         }
 
         return $occurrences;
+    }
+
+    private function formatLabel(DateTimeImmutable $start, string $title, string $location, string $lang): string
+    {
+        $format = $this->labelFormat;
+
+        // {date:PATTERN} — custom ICU pattern
+        $format = preg_replace_callback('/\{date:([^}]+)\}/', function ($m) use ($start, $lang) {
+            if (extension_loaded('intl')) {
+                return IntlDateFormatter::formatObject($start, $m[1], $lang) ?: $start->format('d/m/Y H:i');
+            }
+            return $start->format('d/m/Y H:i');
+        }, $format);
+
+        // {date} — default locale format (date + time)
+        if (str_contains($format, '{date}')) {
+            if (extension_loaded('intl')) {
+                $date = (new IntlDateFormatter($lang, IntlDateFormatter::LONG, IntlDateFormatter::SHORT))->format($start);
+            } else {
+                $date = $start->format('d/m/Y H:i');
+            }
+            $format = str_replace('{date}', $date, $format);
+        }
+
+        return str_replace(
+            ['{title}', '{location}'],
+            [$title,    $location],
+            $format
+        );
+    }
+
+    private function applyFilter(array $sessions, array $filter): array
+    {
+        $titlePatterns    = $filter['title_patterns']    ?? [];
+        $locationPatterns = $filter['location_patterns'] ?? [];
+
+        if (!$titlePatterns && !$locationPatterns) {
+            return $sessions;
+        }
+
+        return array_values(array_filter($sessions, function ($s) use ($titlePatterns, $locationPatterns) {
+            if ($titlePatterns && !$this->matchesAny($s['title'], $titlePatterns)) {
+                return false;
+            }
+            if ($locationPatterns && !$this->matchesAny($s['location'] ?? '', $locationPatterns)) {
+                return false;
+            }
+            return true;
+        }));
+    }
+
+    private function matchesAny(string $value, array $patterns): bool
+    {
+        foreach ($patterns as $pattern) {
+            if (@preg_match($pattern, $value)) return true;
+        }
+        return false;
     }
 
     private function fetchIcs(): string
@@ -146,12 +210,13 @@ class Calendar
             $key    = explode(';', $rawKey)[0];
 
             match ($key) {
-                'UID'     => $current['uid']   = trim(substr($line, $colonPos + 1)),
-                'SUMMARY' => $current['title'] = trim(substr($line, $colonPos + 1)),
-                'DTSTART' => $current['start'] = $this->parseDate($line),
-                'DTEND'   => $current['end']   = $this->parseDate($line),
-                'RRULE'   => $current['rrule'] = $this->parseRrule(trim(substr($line, $colonPos + 1))),
-                default   => null,
+                'UID'      => $current['uid']      = trim(substr($line, $colonPos + 1)),
+                'SUMMARY'  => $current['title']    = trim(substr($line, $colonPos + 1)),
+                'LOCATION' => $current['location'] = trim(substr($line, $colonPos + 1)),
+                'DTSTART'  => $current['start']    = $this->parseDate($line),
+                'DTEND'    => $current['end']       = $this->parseDate($line),
+                'RRULE'    => $current['rrule']    = $this->parseRrule(trim(substr($line, $colonPos + 1))),
+                default    => null,
             };
         }
 
