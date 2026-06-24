@@ -1,4 +1,4 @@
 AuthType Basic
 AuthName "Administration JRV"
-AuthUserFile /home/USER/.htpasswd
+AuthUserFile %%HTPASSWD_PATH%%
 Require valid-user
