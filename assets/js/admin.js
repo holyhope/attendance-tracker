@@ -1,6 +1,10 @@
 const body          = document.body;
 let sessionUid      = body.dataset.sessionUid || '';
 const sessionCoords = JSON.parse(body.dataset.sessionCoords || '{}');
+const showLocation = JSON.parse(body.dataset.showLocation || '"with_map"');
+const showVenue    = showLocation !== false;
+const showLink     = showLocation === 'only_link' || showLocation === 'with_map';
+const showMap      = showLocation === 'with_map';
 
 let map = null, marker = null;
 
@@ -36,28 +40,36 @@ function updateLocation(sel, uid) {
   const venue  = sel.options[sel.selectedIndex]?.dataset.location ?? '';
   const coords = sessionCoords[uid];
   const el     = document.getElementById('session-location');
-  const notice = document.getElementById('map-notice');
-  if (venue) {
-    document.getElementById('venue-name').textContent = '📍 ' + venue;
-    el.classList.remove('d-none');
+  if (!venue) { el.classList.add('d-none'); return; }
+
+  document.getElementById('venue-name').textContent = '📍 ' + venue;
+  el.classList.remove('d-none');
+  el.onclick = null;
+  el.style.cursor = '';
+
+  if (showMap) {
+    const notice = document.getElementById('map-notice');
     if (coords?.lat != null) {
       el.onclick = e => { e.preventDefault(); initMap(coords); };
       el.style.cursor = 'pointer';
       if (!map) notice.classList.remove('d-none');
     } else {
-      el.onclick = null;
-      el.style.cursor = '';
       notice.classList.add('d-none');
     }
-  } else {
-    el.classList.add('d-none');
-    notice.classList.add('d-none');
+  } else if (showLink) {
+    if (coords?.lat != null) {
+      el.href = `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lon}#map=15/${coords.lat}/${coords.lon}`;
+      el.target = '_blank';
+      el.rel = 'noopener';
+    } else {
+      el.removeAttribute('href');
+    }
   }
 }
 
 const sessionSel = document.getElementById('session');
-updateLocation(sessionSel, sessionUid);
-updateMap(sessionUid);
+if (showVenue) updateLocation(sessionSel, sessionUid);
+if (showMap)   updateMap(sessionUid);
 
 function showFeedback(msg, type) {
   const el = document.getElementById('feedback');
@@ -93,8 +105,8 @@ document.getElementById('session').addEventListener('change', ({ target }) => {
   fetch(`/api/admin/checkins.php?session_uid=${encodeURIComponent(sessionUid)}`)
     .then(r => r.json())
     .then(({ checkins = [] }) => renderCheckins(checkins));
-  updateMap(sessionUid);
-  updateLocation(sessionSel, sessionUid);
+  if (showMap)   updateMap(sessionUid);
+  if (showVenue) updateLocation(sessionSel, sessionUid);
 });
 
 window.addEventListener('popstate', ({ state }) => {

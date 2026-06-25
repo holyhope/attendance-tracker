@@ -5,6 +5,10 @@ const initialChecked   = [...checkedUids];
 const savedNickname    = JSON.parse(body.dataset.savedNickname || '""');
 const sessionCoords    = JSON.parse(body.dataset.sessionCoords || '{}');
 const associationName  = body.dataset.associationName || '';
+const showLocation = JSON.parse(body.dataset.showLocation || '"with_map"');
+const showVenue    = showLocation !== false;
+const showLink     = showLocation === 'only_link' || showLocation === 'with_map';
+const showMap      = showLocation === 'with_map';
 
 const translations = {
   fr: {
@@ -150,28 +154,39 @@ function updateLocation(sel, uid) {
   const venue  = sel.options[sel.selectedIndex]?.dataset.location ?? '';
   const coords = sessionCoords[uid];
   const el     = document.getElementById('session-location');
-  const notice = document.getElementById('map-notice');
-  if (venue) {
-    document.getElementById('venue-name').textContent = '📍 ' + venue;
-    el.classList.remove('d-none');
+  if (!venue) { el.classList.add('d-none'); return; }
+
+  document.getElementById('venue-name').textContent = '📍 ' + venue;
+  el.classList.remove('d-none');
+  el.onclick = null;
+  el.style.cursor = '';
+
+  if (showMap) {
+    const notice = document.getElementById('map-notice');
     if (coords?.lat != null) {
       el.onclick = e => { e.preventDefault(); initMap(coords); };
       el.style.cursor = 'pointer';
       if (!map) notice.classList.remove('d-none');
     } else {
-      el.onclick = null;
-      el.style.cursor = '';
       notice.classList.add('d-none');
     }
-  } else {
-    el.classList.add('d-none');
-    notice.classList.add('d-none');
+  } else if (showLink) {
+    if (coords?.lat != null) {
+      el.href = `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lon}#map=15/${coords.lat}/${coords.lon}`;
+      el.target = '_blank';
+      el.rel = 'noopener';
+    } else {
+      el.removeAttribute('href');
+    }
   }
 }
 
-updateLocation(sessionSel, sessionSel.value);
-updateMap(sessionSel.value);
-sessionSel.addEventListener('change', ({ target }) => { updateMap(target.value); updateLocation(target, target.value); });
+if (showVenue) updateLocation(sessionSel, sessionSel.value);
+if (showMap)   updateMap(sessionSel.value);
+sessionSel.addEventListener('change', ({ target }) => {
+  if (showVenue) updateLocation(target, target.value);
+  if (showMap)   updateMap(target.value);
+});
 
 document.getElementById('checkin-form').addEventListener('submit', async e => {
   e.preventDefault();

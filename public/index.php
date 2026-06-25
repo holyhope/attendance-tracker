@@ -63,10 +63,17 @@ try {
     $sessions = [];
 }
 
-$geocacheFile  = dirname($config['cache_path']) . '/geocode.json';
+$showLocation = $config['show_location'] ?? 'with_map';
+$showVenue    = $showLocation !== false;
+$showLink     = in_array($showLocation, ['only_link', 'with_map'], true);
+$showMap      = $showLocation === 'with_map';
+
 $sessionCoords = [];
-foreach ($sessions as $s) {
-    $sessionCoords[$s['uid']] = geocode($s['location'] ?? '', $geocacheFile);
+if ($showLink) {
+    $geocacheFile = dirname($config['cache_path']) . '/geocode.json';
+    foreach ($sessions as $s) {
+        $sessionCoords[$s['uid']] = geocode($s['location'] ?? '', $geocacheFile);
+    }
 }
 
 $associationName = $config['association_name'];
@@ -148,14 +155,16 @@ if (!$currentUid && !empty($sessions)) {
     if ($upcoming) $currentUid = end($upcoming)['uid'];
 }
 
-$osmLink        = '';
+$osmLink          = '';
 $currentVenueName = '';
-$c = $sessionCoords[$currentUid] ?? ['lat' => null, 'lon' => null];
-if ($c['lat'] !== null) {
-    $osmLink = 'https://www.openstreetmap.org/?mlat=' . $c['lat'] . '&mlon=' . $c['lon']
-             . '#map=15/' . $c['lat'] . '/' . $c['lon'];
-    $loc = array_column($sessions, 'location', 'uid')[$currentUid] ?? '';
-    $currentVenueName = trim(str_replace(['\\,', '\\\\'], [',', '\\'], explode('\\n', $loc)[0]));
+if ($showLink) {
+    $c = $sessionCoords[$currentUid] ?? ['lat' => null, 'lon' => null];
+    if ($c['lat'] !== null) {
+        $osmLink = 'https://www.openstreetmap.org/?mlat=' . $c['lat'] . '&mlon=' . $c['lon']
+                 . '#map=15/' . $c['lat'] . '/' . $c['lon'];
+        $loc = array_column($sessions, 'location', 'uid')[$currentUid] ?? '';
+        $currentVenueName = trim(str_replace(['\\,', '\\\\'], [',', '\\'], explode('\\n', $loc)[0]));
+    }
 }
 
 ?>
@@ -167,13 +176,14 @@ if ($c['lat'] !== null) {
   <title><?= htmlspecialchars($title) ?> — SPS</title>
   <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/bootstrap.min.css">
-  <link rel="stylesheet" href="/assets/leaflet.min.css">
+  <?php if ($showMap): ?><link rel="stylesheet" href="/assets/leaflet.min.css"><?php endif ?>
 </head>
 <body class="bg-light py-4 px-3"
   data-lang="<?= $lang ?>"
   data-association-name="<?= htmlspecialchars($associationName) ?>"
   data-checked-uids="<?= htmlspecialchars(json_encode($checkedUids), ENT_QUOTES) ?>"
   data-saved-nickname="<?= htmlspecialchars(json_encode($savedNickname), ENT_QUOTES) ?>"
+  data-show-location="<?= htmlspecialchars(json_encode($showLocation)) ?>"
   data-session-coords="<?= htmlspecialchars(json_encode($sessionCoords), ENT_QUOTES) ?>">
 <main class="card mx-auto" style="max-width:420px">
   <div class="card-body">
@@ -202,19 +212,23 @@ if ($c['lat'] !== null) {
           </option>
           <?php endforeach ?>
         </select>
-        <a id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block" href="#">
+        <?php if ($showVenue): ?>
+        <?= $showLink ? '<a' : '<span' ?> id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block"<?= $showLink ? ' href="#"' : '' ?>>
           <span id="venue-name"></span>
+          <?php if ($showMap): ?>
           <small id="map-notice" class="d-none d-block" style="font-size:.75em">
             En cliquant, des données de localisation seront chargées depuis openstreetmap.org.
           </small>
-        </a>
+          <?php endif ?>
+        <?= $showLink ? '</a>' : '</span>' ?>
         <?php if ($osmLink): ?>
         <noscript>
           <a href="<?= htmlspecialchars($osmLink) ?>" target="_blank" rel="noopener"
             class="d-block mt-1 small text-muted">📍 <?= htmlspecialchars($currentVenueName) ?></a>
         </noscript>
         <?php endif ?>
-        <div id="map" class="d-none rounded mt-2" style="height:220px"></div>
+        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px"></div><?php endif ?>
+        <?php endif ?>
       </div>
 
       <div class="mb-3">
@@ -243,7 +257,7 @@ if ($c['lat'] !== null) {
   </div>
 </main>
 
-<script src="/assets/leaflet.min.js"></script>
+<?php if ($showMap): ?><script src="/assets/leaflet.min.js"></script><?php endif ?>
 <script src="/assets/app.js"></script>
 </body>
 </html>

@@ -13,6 +13,13 @@ return [
     // {date:PATTERN} accepte un pattern ICU (ex : {date:EEEE d MMMM yyyy HH:mm}).
     'session_label_format' => '{date} — {title}',
 
+    // Optionnel — affichage du lieu sous le sélecteur de séance.
+    // false        : lieu masqué.
+    // true         : nom du lieu affiché (texte seul).
+    // 'only_link'  : nom du lieu sous forme de lien vers OSM.
+    // 'with_map'   : nom du lieu + carte Leaflet/OSM au clic.
+    'show_location' => 'with_map',
+
     // Optionnel — filtre les événements du calendrier (regex PHP).
     // Une séance est affichée si son titre correspond à au moins un pattern de titre
     // ET (si renseigné) si son lieu correspond à au moins un pattern de lieu.
