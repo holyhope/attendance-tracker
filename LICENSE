@@ -387,10 +387,13 @@ following conditions:
    the attendance-tracking interface (e.g. a page footer). It must not
    be hidden, obfuscated, or otherwise made inaccessible.
 
-2. Sponsor Link — A clearly visible, functional, and non-deceptive link
-   to https://github.com/sponsors/holyhope must be accessible to end
-   users of the attendance-tracking interface. The link must not be
-   hidden, removed, or otherwise made inaccessible.
+2. Attribution Link — A clearly visible, functional, and non-deceptive
+   link must be accessible to end users of the attendance-tracking
+   interface. The link must point to one of the following:
+     (a) https://github.com/sponsors/holyhope, or
+     (b) https://github.com/holyhope/attendance-tracker/blob/main/LICENSE
+         (the licence file in the original repository, not a fork).
+   The link must not be hidden, removed, or otherwise made inaccessible.
 
 These additional conditions apply regardless of whether the Source Code
 Form has been modified.

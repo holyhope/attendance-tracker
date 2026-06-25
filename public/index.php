@@ -247,7 +247,7 @@ if ($showLink) {
       <?php endforeach ?>
     </span>
     <a href="/admin/" class="text-secondary small"><?= $t['admin_link'] ?></a>
-    <a href="https://github.com/sponsors/holyhope" target="_blank" rel="noopener" class="text-secondary small">© <?= date('Y') ?> holyhope</a>
+    <a href="https://github.com/holyhope/attendance-tracker?tab=License-1-ov-file" target="_blank" rel="noopener" class="text-secondary small">© <?= date('Y') ?> holyhope</a>
   </div>
 </footer>
 
