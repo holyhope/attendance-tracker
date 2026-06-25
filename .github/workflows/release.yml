@@ -73,7 +73,7 @@ jobs:
               'db_dsn'               => 'sqlite:' . __DIR__ . '/data/attendance.db',
               'cache_path'           => __DIR__ . '/cache/agenda.ics.cache',
               'calendar_url'         => '${{ secrets.CALENDAR_URL }}',
-              'session_label_format' => '{date}',
+              'session_label_format' => '{date:EEEE d MMMM yyyy}',
               'show_location'        => 'with_map',
           ];
           PHP
