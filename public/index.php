@@ -55,7 +55,7 @@ $calendar = new Calendar(
     $config['calendar_url'],
     $config['cache_path'],
     filter:      $config['event_filter']         ?? [],
-    labelFormat: $config['session_label_format'] ?? '{datetime} — {title}',
+    labelFormat: $config['session_label_format'] ?? '{date} — {title}',
 );
 try {
     $sessions = $calendar->getSessions($lang);
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             (new CheckinService(Database::get()))->checkin($sessionUid, $nickname);
             if ($remember) {
-                setcookie(COOKIE_NAME, $nickname, time() + COOKIE_TTL, '/', '', false, false);
+                setcookie(COOKIE_NAME, $nickname, ['expires' => time() + COOKIE_TTL, 'path' => '/', 'secure' => true, 'httponly' => false, 'samesite' => 'Strict']);
             } elseif ($savedNickname !== '') {
                 setcookie(COOKIE_NAME, '', time() - 1, '/');
             }

@@ -82,17 +82,22 @@ function renderCheckins(checkins) {
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
   checkins.forEach(c => {
+    const date = new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/';
+    form.style.display = 'inline';
+    const inId  = document.createElement('input'); inId.type  = 'hidden'; inId.name  = 'checkin_id';  inId.value = c.id;
+    const inSid = document.createElement('input'); inSid.type = 'hidden'; inSid.name = 'session_uid'; inSid.value = sessionUid;
+    const btn   = document.createElement('button'); btn.type = 'submit'; btn.className = 'btn btn-outline-danger btn-sm'; btn.textContent = 'Supprimer';
+    form.append(inId, inSid, btn);
+
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${c.nickname}</td>
-      <td>${new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
-      <td class="text-end">
-        <form method="POST" action="/admin/" style="display:inline">
-          <input type="hidden" name="checkin_id" value="${c.id}">
-          <input type="hidden" name="session_uid" value="${sessionUid}">
-          <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
-        </form>
-      </td>`;
+    const tdName = document.createElement('td'); tdName.textContent = c.nickname;
+    const tdDate = document.createElement('td'); tdDate.textContent = date;
+    const tdAct  = document.createElement('td'); tdAct.className = 'text-end'; tdAct.appendChild(form);
+    tr.append(tdName, tdDate, tdAct);
     tbody.appendChild(tr);
   });
 }

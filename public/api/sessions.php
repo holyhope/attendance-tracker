@@ -9,7 +9,7 @@ $calendar = new Calendar(
     $config['calendar_url'],
     $config['cache_path'],
     filter:      $config['event_filter']      ?? [],
-    labelFormat: $config['session_label_format'] ?? '{datetime} — {title}',
+    labelFormat: $config['session_label_format'] ?? '{date} — {title}',
 );
 
 preg_match('/^([a-z]{2})/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'fr', $m);

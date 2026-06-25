@@ -16,11 +16,13 @@ $feedback = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $checkinId  = trim($_POST['checkin_id']  ?? '');
     $sessionUid = trim($_POST['session_uid'] ?? '');
-    if ($checkinId) {
-        $stmt = Database::get()->prepare('DELETE FROM checkins WHERE id = ?');
-        $stmt->execute([$checkinId]);
+    $deleted = false;
+    if ($checkinId && $sessionUid) {
+        $stmt = Database::get()->prepare('DELETE FROM checkins WHERE id = ? AND session_uid = ?');
+        $stmt->execute([$checkinId, $sessionUid]);
+        $deleted = $stmt->rowCount() > 0;
     }
-    header('Location: /admin/?session_uid=' . urlencode($sessionUid) . '&deleted=1');
+    header('Location: /admin/?session_uid=' . urlencode($sessionUid) . ($deleted ? '&deleted=1' : ''));
     exit;
 }
 

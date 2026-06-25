@@ -57,7 +57,6 @@ cp config.example.php config.php
 | `association_name` | Nom affiché dans l'interface |
 | `calendar_url` | URL iCal de l'agenda Google Calendar |
 | `db_dsn` | Chemin vers la base SQLite (ex. `sqlite:/var/www/data/attendance.db`) |
-| `admin_token` | Chaîne aléatoire longue pour protéger l'administration |
 
 Voir `config.example.php` pour toutes les options (format des libellés, filtre
 des événements…).

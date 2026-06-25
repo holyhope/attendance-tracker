@@ -92,20 +92,18 @@ function syncCheckedState(nickname) {
   updateButtons(sel.value);
 }
 
+let timer;
 document.getElementById('nickname').addEventListener('input', ({ target }) => {
   const val      = target.value.trim();
   const checkbox = document.getElementById('remember');
   const matches  = val === decodeURIComponent(getCookie());
   if (checkbox.checked !== matches) checkbox.checked = matches;
   syncCheckedState(val);
-});
 
-let timer;
-document.getElementById('nickname').addEventListener('input', ({ target }) => {
   clearTimeout(timer);
-  if (target.value.trim().length < 2) return;
+  if (val.length < 2) return;
   timer = setTimeout(() => {
-    fetch(`/api/attendees.php?q=${encodeURIComponent(target.value.trim())}`)
+    fetch(`/api/attendees.php?q=${encodeURIComponent(val)}`)
       .then(r => r.json())
       .then(({ attendees = [] }) => {
         const dl = document.getElementById('suggestions');

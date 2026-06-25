@@ -247,13 +247,18 @@ class Calendar
         }
 
         if (strlen($value) === 8) {
-            return DateTimeImmutable::createFromFormat('Ymd', $value, $tz)->setTime(0, 0);
+            $dt = DateTimeImmutable::createFromFormat('Ymd', $value, $tz);
+            if ($dt === false) throw new \UnexpectedValueException("Cannot parse date: $value");
+            return $dt->setTime(0, 0);
         }
 
         if (str_ends_with($value, 'Z')) {
-            return DateTimeImmutable::createFromFormat('Ymd\THis\Z', $value, new DateTimeZone('UTC'));
+            $dt = DateTimeImmutable::createFromFormat('Ymd\THis\Z', $value, new DateTimeZone('UTC'));
+        } else {
+            $dt = DateTimeImmutable::createFromFormat('Ymd\THis', $value, $tz);
         }
 
-        return DateTimeImmutable::createFromFormat('Ymd\THis', $value, $tz);
+        if ($dt === false) throw new \UnexpectedValueException("Cannot parse date: $value");
+        return $dt;
     }
 }
