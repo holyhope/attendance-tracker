@@ -253,13 +253,16 @@ if ($showLink) {
 
     <div class="text-center mt-3 d-flex justify-content-center align-items-center gap-3">
       <a href="/admin/" class="text-secondary small"><?= $t['admin_link'] ?></a>
-      <a href="https://github.com/sponsors/holyhope" target="_blank" rel="noopener"
-         class="text-secondary small">© <?= date('Y') ?> holyhope</a>
     </div>
   </div>
 </main>
 
+<div class="text-center mt-3">
+  <a href="https://github.com/sponsors/holyhope" target="_blank" rel="noopener" class="text-secondary small">© <?= date('Y') ?> holyhope</a>
+</div>
+
 <?php if ($showMap): ?><script src="/assets/leaflet.min.js"></script><?php endif ?>
 <script src="/assets/app.js"></script>
+
 </body>
 </html>
