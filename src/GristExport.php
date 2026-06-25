@@ -95,22 +95,22 @@ function export_grist(array $rows, array $sessionLabels, array $sessionLocations
 
     // ── Columns ──────────────────────────────────────────────────────────────
     $stmtCol = $db->prepare("INSERT INTO \"_grist_Tables_column\"
-        (id, parentId, parentPos, colId, type, isFormula, label, visibleCol)
-        VALUES (?, ?, ?, ?, ?, 0, ?, ?)");
+        (id, parentId, parentPos, colId, type, isFormula, label, visibleCol, description)
+        VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)");
     // Lieux
-    $stmtCol->execute([ 1, 1, 1, 'manualSort',   'ManualSortPos', 'manualSort',       0]);
-    $stmtCol->execute([ 2, 1, 2, 'Nom',           'Text',          'Nom',              0]);
-    $stmtCol->execute([ 3, 1, 3, 'Latitude',      'Numeric',       'Latitude',         0]);
-    $stmtCol->execute([ 4, 1, 4, 'Longitude',     'Numeric',       'Longitude',        0]);
+    $stmtCol->execute([ 1, 1, 1, 'manualSort',  'ManualSortPos', 'manualSort',      0, '']);
+    $stmtCol->execute([ 2, 1, 2, 'Nom',          'Text',          'Nom',             0, 'Adresse ou nom du lieu de la séance.']);
+    $stmtCol->execute([ 3, 1, 3, 'Latitude',     'Numeric',       'Latitude',        0, 'Latitude géographique du lieu (WGS 84), issue du géocodage Nominatim/OpenStreetMap.']);
+    $stmtCol->execute([ 4, 1, 4, 'Longitude',    'Numeric',       'Longitude',       0, 'Longitude géographique du lieu (WGS 84), issue du géocodage Nominatim/OpenStreetMap.']);
     // Seances
-    $stmtCol->execute([ 5, 2, 1, 'manualSort',   'ManualSortPos', 'manualSort',       0]);
-    $stmtCol->execute([ 6, 2, 2, 'Date',          'Text',          'Date',             0]);
-    $stmtCol->execute([ 7, 2, 3, 'Lieu',          'Ref:Lieux',     'Lieu',    $COL_L_NOM]);
+    $stmtCol->execute([ 5, 2, 1, 'manualSort',  'ManualSortPos', 'manualSort',      0, '']);
+    $stmtCol->execute([ 6, 2, 2, 'Date',         'Text',          'Date',            0, 'Libellé de la séance (date et titre de l\'événement du calendrier).']);
+    $stmtCol->execute([ 7, 2, 3, 'Lieu',         'Ref:Lieux',     'Lieu',   $COL_L_NOM, 'Lieu associé à la séance, référence vers la table Lieux.']);
     // Presences
-    $stmtCol->execute([ 8, 3, 1, 'manualSort',   'ManualSortPos', 'manualSort',        0]);
-    $stmtCol->execute([ 9, 3, 2, 'Pseudo',        'Text',          'Pseudo',            0]);
-    $stmtCol->execute([10, 3, 3, 'Seance',        'Ref:Seances',   'Séance',  $COL_S_DATE]);
-    $stmtCol->execute([11, 3, 4, 'DatePointage',  'Text',          'Date du pointage',  0]);
+    $stmtCol->execute([ 8, 3, 1, 'manualSort',  'ManualSortPos', 'manualSort',      0, '']);
+    $stmtCol->execute([ 9, 3, 2, 'Pseudo',       'Text',          'Pseudo',          0, 'Pseudonyme saisi par le participant lors du pointage.']);
+    $stmtCol->execute([10, 3, 3, 'Seance',       'Ref:Seances',   'Séance', $COL_S_DATE, 'Séance pointée, référence vers la table Séances.']);
+    $stmtCol->execute([11, 3, 4, 'DatePointage', 'Text',          'Date du pointage', 0, 'Date et heure auxquelles le pointage a été enregistré.']);
 
     // ── Views ────────────────────────────────────────────────────────────────
     $stmtView = $db->prepare("INSERT INTO \"_grist_Views\" (id, name, type, layoutSpec) VALUES (?, ?, ?, ?)");
