@@ -1,6 +1,6 @@
 config.php
 data/*.db
-cache/*.ics.cache
+cache/
 node_modules
 .htpasswd
 public/assets/*.css

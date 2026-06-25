@@ -46,6 +46,7 @@ $countRows = Database::get()
     ->fetchAll();
 $counts = array_column($countRows, 'cnt', 'session_uid');
 
+
 // Selected session — GET param, fallback to current or most recent
 $sessionUid = trim($_GET['session_uid'] ?? '');
 if (!$sessionUid) {
@@ -87,10 +88,19 @@ if ($sessionUid) {
 
   <div class="card mb-3">
     <div class="card-body">
-      <h1 class="h4 mb-3 d-flex align-items-center gap-2">
-        <img src="/assets/icon.svg" alt="" width="28" height="28">
-        Administration — <?= htmlspecialchars($config['association_name']) ?>
-      </h1>
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <h1 class="h4 mb-0 d-flex align-items-center gap-2">
+          <img src="/assets/icon.svg" alt="" width="28" height="28">
+          Administration — <?= htmlspecialchars($config['association_name']) ?>
+        </h1>
+        <form method="GET" action="/api/admin/checkins.php" class="d-flex gap-1 ms-auto">
+          <select name="format" class="form-select form-select-sm" style="width:auto">
+            <option value="grist">Grist</option>
+            <option value="csv">CSV</option>
+          </select>
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Exporter</button>
+        </form>
+      </div>
 
       <?php if ($feedback): ?>
       <div class="alert alert-<?= $feedback['type'] ?>" id="feedback" role="alert">
@@ -102,7 +112,7 @@ if ($sessionUid) {
 
       <form method="GET" action="/admin/" id="session-form">
         <label for="session" class="form-label">Séance</label>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
           <select name="session_uid" id="session" class="form-select">
             <?php foreach ($sessions as $s): ?>
             <?php $cnt = (int) ($counts[$s['uid']] ?? 0) ?>
@@ -118,36 +128,7 @@ if ($sessionUid) {
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center py-2">
-      <span class="text-secondary small" id="count"><?= count($checkins) ?> présence(s)</span>
-
-      <!-- Export no-JS -->
-      <div id="export-nojs" class="d-flex gap-1">
-        <?php $encUid = urlencode($sessionUid) ?>
-        <a href="/api/admin/checkins.php?session_uid=<?= $encUid ?>&format=csv"
-           class="btn btn-outline-secondary btn-sm">CSV</a>
-        <a href="/api/admin/checkins.php?session_uid=<?= $encUid ?>&format=json"
-           class="btn btn-outline-secondary btn-sm">JSON</a>
-        <a href="/api/admin/checkins.php?session_uid=<?= $encUid ?>&format=grist"
-           class="btn btn-outline-secondary btn-sm">Grist</a>
-      </div>
-
-      <!-- Export JS (split-button dropdown) — shown by JS -->
-      <div class="btn-group d-none" id="export-js">
-        <button class="btn btn-outline-secondary btn-sm" id="btn-export">Exporter CSV</button>
-        <button class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
-                id="export-dropdown-toggle" aria-expanded="false">
-          <span class="visually-hidden">Choisir le format</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" id="export-menu">
-          <li><a class="dropdown-item active" href="#" data-format="csv">CSV</a></li>
-          <li><a class="dropdown-item" href="#" data-format="json">JSON</a></li>
-          <li><a class="dropdown-item" href="#" data-format="grist">Grist</a></li>
-        </ul>
-      </div>
-    </div>
-
+<div class="card">
     <table class="table table-hover mb-0">
       <thead class="table-light">
         <tr>
@@ -177,7 +158,6 @@ if ($sessionUid) {
 </main>
 
 <script>
-  let format      = 'csv';
   let sessionUid  = <?= json_encode($sessionUid) ?>;
 
   function showFeedback(msg, type) {
@@ -190,7 +170,6 @@ if ($sessionUid) {
   function renderCheckins(checkins) {
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
-    document.getElementById('count').textContent = `${checkins.length} présence(s)`;
     checkins.forEach(c => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -207,24 +186,13 @@ if ($sessionUid) {
     });
   }
 
-  function updateExportLinks(uid) {
-    document.querySelectorAll('#export-nojs a').forEach(a => {
-      const url = new URL(a.href, location.origin);
-      url.searchParams.set('session_uid', uid);
-      a.href = url.toString();
-    });
-  }
-
-  // Progressive enhancements
+  // Progressive enhancement
   document.getElementById('btn-voir').classList.add('d-none');
-  document.getElementById('export-nojs').classList.add('d-none');
-  document.getElementById('export-js').classList.remove('d-none');
 
   // Session change — fetch checkins without reload
   document.getElementById('session').addEventListener('change', ({ target }) => {
     sessionUid = target.value;
     history.pushState({ sessionUid }, '', `/admin/?session_uid=${encodeURIComponent(sessionUid)}`);
-    updateExportLinks(sessionUid);
     fetch(`/api/admin/checkins.php?session_uid=${encodeURIComponent(sessionUid)}`)
       .then(r => r.json())
       .then(({ checkins = [] }) => renderCheckins(checkins));
@@ -233,9 +201,7 @@ if ($sessionUid) {
   window.addEventListener('popstate', ({ state }) => {
     if (!state?.sessionUid) return;
     sessionUid = state.sessionUid;
-    const sel = document.getElementById('session');
-    sel.value = sessionUid;
-    updateExportLinks(sessionUid);
+    document.getElementById('session').value = sessionUid;
     fetch(`/api/admin/checkins.php?session_uid=${encodeURIComponent(sessionUid)}`)
       .then(r => r.json())
       .then(({ checkins = [] }) => renderCheckins(checkins));
@@ -253,8 +219,6 @@ if ($sessionUid) {
     }).then(r => r.json());
     if (res.ok) {
       e.target.closest('tr').remove();
-      document.getElementById('count').textContent =
-        document.getElementById('count').textContent.replace(/\d+/, n => n - 1);
       const sel = document.getElementById('session');
       sel.options[sel.selectedIndex].text =
         sel.options[sel.selectedIndex].text.replace(/\((\d+)\)/, (_, n) => `(${Math.max(0, n - 1)})`)
@@ -263,38 +227,6 @@ if ($sessionUid) {
     }
   });
 
-  // Export dropdown — vanilla JS toggle
-  const toggle = document.getElementById('export-dropdown-toggle');
-  const menu   = document.getElementById('export-menu');
-
-  toggle.addEventListener('click', e => {
-    e.stopPropagation();
-    const open = menu.classList.toggle('show');
-    toggle.setAttribute('aria-expanded', open);
-  });
-
-  document.addEventListener('click', () => {
-    menu.classList.remove('show');
-    toggle.setAttribute('aria-expanded', false);
-  });
-
-  menu.addEventListener('click', e => {
-    const item = e.target.closest('[data-format]');
-    if (!item) return;
-    e.preventDefault();
-    menu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    format = item.dataset.format;
-    document.getElementById('btn-export').textContent = `Exporter ${format.toUpperCase()}`;
-    menu.classList.remove('show');
-    toggle.setAttribute('aria-expanded', false);
-  });
-
-  // Export — navigation directe (laisse le Content-Disposition serveur gérer le nom)
-  document.getElementById('btn-export').addEventListener('click', () => {
-    if (!sessionUid) return;
-    window.location.href = `/api/admin/checkins.php?session_uid=${encodeURIComponent(sessionUid)}&format=${format}`;
-  });
 </script>
 </body>
 </html>
