@@ -14,7 +14,7 @@ preg_match('/^([a-z]{2})/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'fr', $m);
 $lang = in_array(strtolower($m[1] ?? 'fr'), ['en']) ? 'en' : 'fr';
 
 /** @var array<string, string> $t */
-$t = require __DIR__ . '/../../lang/' . $lang . '.php';
+$t = require __DIR__ . '/../lang/' . $lang . '.php';
 
 // Load sessions server-side
 $calendar = new Calendar(
