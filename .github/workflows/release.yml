@@ -62,6 +62,17 @@ jobs:
           HTPASSWD_PATH="/home/${{ vars.FTP_USER }}/.htpasswd"
           sed -i "s|%%HTPASSWD_PATH%%|${HTPASSWD_PATH}|" dist/www/admin/.htaccess
           sed -i "s|%%HTPASSWD_PATH%%|${HTPASSWD_PATH}|" dist/www/api/admin/.htaccess
+          cat > dist/config.php << 'PHP'
+          <?php
+          return [
+              'association_name'     => '${{ vars.ASSOCIATION_NAME }}',
+              'db_dsn'               => 'sqlite:' . __DIR__ . '/data/attendance.db',
+              'cache_path'           => __DIR__ . '/cache/agenda.ics.cache',
+              'calendar_url'         => '${{ secrets.CALENDAR_URL }}',
+              'session_label_format' => '{date} — {title}',
+              'show_location'        => 'with_map',
+          ];
+          PHP
 
       - name: Deploy via FTP
         run: |
