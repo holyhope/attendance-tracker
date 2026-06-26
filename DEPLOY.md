@@ -62,6 +62,57 @@ git push origin v1.2.3
 Le déploiement se déclenche automatiquement à la publication de la release.
 L'avancement est visible dans l'onglet **Actions** du dépôt GitHub.
 
+## Migrations de schéma base de données
+
+Le schéma SQLite est versionné via `PRAGMA user_version`, un entier stocké
+directement dans le fichier `.db`. Les migrations s'exécutent automatiquement
+au premier accès après un déploiement — sans CLI ni intervention manuelle.
+
+Pour ajouter une migration dans `src/Database.php` :
+
+```php
+if ($version < 2) {
+    $pdo->exec("
+        ALTER TABLE attendees ADD COLUMN email TEXT;
+        PRAGMA user_version = 2;
+    ");
+}
+```
+
+Règles à respecter :
+- Numéroter les versions séquentiellement (`< 2`, `< 3`, …)
+- Ne jamais modifier une migration déjà déployée — ajouter un nouveau bloc
+- Les bases existantes se mettent à jour automatiquement au premier accès
+- SQLite ne supporte pas `DROP COLUMN` sur les versions anciennes : pour
+  restructurer une table, utiliser le pattern
+  `CREATE TABLE new → INSERT … SELECT → DROP TABLE old → ALTER TABLE old RENAME TO new`
+
+## Supprimer les fichiers obsolètes lors d'une mise à jour
+
+Le pipeline CI utilise `lftp mirror --delete` pour synchroniser le serveur avec
+le contenu exact de `dist/` : les fichiers supprimés du dépôt sont également
+supprimés sur le serveur.
+
+**Sans la CI, cette suppression n'est pas automatique.** Un fichier devenu
+obsolète — par exemple un ancien `.htaccess`, une page PHP renommée ou un
+asset remplacé — reste sur le serveur et peut provoquer des erreurs
+inattendues (page bloquée, règle Apache en conflit, comportement incohérent).
+
+### Déploiement manuel : supprimer les fichiers obsolètes
+
+Avant ou après avoir copié les nouveaux fichiers, supprimer via FTP ou le
+gestionnaire de fichiers OVH tout fichier qui n'existe plus dans la release :
+
+1. Consulter les notes de la release sur GitHub pour identifier les fichiers
+   supprimés ou renommés (ils apparaissent dans le diff entre les deux tags).
+2. Supprimer ces fichiers depuis le gestionnaire de fichiers OVH
+   (Hébergement → FTP → Gestionnaire de fichiers) ou via un client FTP.
+
+> **Exemple concret** : lors d'une mise à jour, un ancien `www/admin/index.html`
+> présent sur le serveur était servi par Apache à la place du nouveau
+> `www/admin/index.php`, rendant la page d'administration inaccessible.
+> Supprimer ce fichier manuellement a suffi à résoudre le problème.
+
 ## Premier déploiement (initialisation serveur)
 
 Le pipeline génère `config.php` automatiquement mais ne crée pas la base de

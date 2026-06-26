@@ -28,22 +28,27 @@ class Database
 
     private static function migrate(PDO $pdo): void
     {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS attendees (
-                id       TEXT PRIMARY KEY,
-                nickname TEXT NOT NULL UNIQUE
-            );
+        $version = (int) $pdo->query('PRAGMA user_version')->fetchColumn();
 
-            CREATE TABLE IF NOT EXISTS checkins (
-                id          TEXT PRIMARY KEY,
-                session_uid TEXT NOT NULL,
-                attendee_id TEXT NOT NULL REFERENCES attendees(id),
-                created_at  TIMESTAMP NOT NULL
-            );
+        if ($version < 1) {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS attendees (
+                    id       TEXT PRIMARY KEY,
+                    nickname TEXT NOT NULL UNIQUE
+                );
 
-            CREATE UNIQUE INDEX IF NOT EXISTS uq_checkin
-                ON checkins (session_uid, attendee_id);
-        ");
+                CREATE TABLE IF NOT EXISTS checkins (
+                    id          TEXT PRIMARY KEY,
+                    session_uid TEXT NOT NULL,
+                    attendee_id TEXT NOT NULL REFERENCES attendees(id),
+                    created_at  TIMESTAMP NOT NULL
+                );
 
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_checkin
+                    ON checkins (session_uid, attendee_id);
+
+                PRAGMA user_version = 1;
+            ");
+        }
     }
 }
