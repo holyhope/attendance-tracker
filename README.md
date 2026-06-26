@@ -7,6 +7,9 @@ association ou de votre salle. Pas de compte à créer, pas d'application à
 installer : les participants s'identifient avec un pseudonyme depuis n'importe
 quel navigateur.
 
+Conçue avec la vie privée en tête : pas de tracker, pas de CDN externe, pas de
+nom réel requis. Toutes les données restent sur votre propre hébergement.
+
 ---
 
 ## Fonctionnalités
@@ -25,6 +28,8 @@ quel navigateur.
 - **Fonctionne sans JavaScript** — amélioration progressive : tout est
   utilisable avec JS désactivé.
 - **Bilingue** — français et anglais selon la langue du navigateur.
+- **Respectueux de la vie privée** — pas de tracker, pas de CDN externe,
+  pseudonyme au lieu d'un nom réel, données hébergées chez vous.
 
 ## Prérequis
 
@@ -118,6 +123,6 @@ Depuis la page d'administration, le menu **Exporter** permet de télécharger :
 ## Licence
 
 [MPL 2.0](LICENSE) avec conditions supplémentaires d'attribution UI :
-tout déploiement doit afficher le copyright `© holyhope` et un lien vers
-[github.com/sponsors/holyhope](https://github.com/sponsors/holyhope) de
-manière visible pour les utilisateurs finaux.
+tout déploiement doit afficher le copyright `© holyhope` et un lien visible
+vers [github.com/sponsors/holyhope](https://github.com/sponsors/holyhope)
+ou vers le [fichier de licence du dépôt original](LICENSE).
