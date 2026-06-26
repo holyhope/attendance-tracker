@@ -162,7 +162,7 @@ class CalendarTest extends TestCase
             'SUMMARY' => 'Jusqu\'à',
             'DTSTART' => '20260601T100000Z',
             'DTEND'   => '20260601T110000Z',
-            'RRULE'   => 'FREQ=WEEKLY;UNTIL=20260615T000000Z',
+            'RRULE'   => 'FREQ=WEEKLY;UNTIL=20260615T235959Z',
         ]);
 
         $expand = new ReflectionMethod(Calendar::class, 'expand');
