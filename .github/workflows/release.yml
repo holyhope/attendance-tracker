@@ -79,12 +79,18 @@ jobs:
           ];
           PHP
 
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
       - name: Deploy via FTP
         run: |
-          find dist -type f | sort | while IFS= read -r f; do
-            rel="${f#dist/}"
-            curl --silent --show-error --ftp-create-dirs \
-                 --upload-file "$f" \
-                 "ftp://${{ vars.FTP_USER }}:${{ secrets.FTP_PASSWORD }}@${{ vars.FTP_HOST }}:${{ vars.FTP_PORT }}/${rel}"
-            echo "✓ ${rel}"
-          done
+          lftp -c "
+            open -u ${{ vars.FTP_USER }},${{ secrets.FTP_PASSWORD }} \
+                 ftp://${{ vars.FTP_HOST }}:${{ vars.FTP_PORT }}
+            mirror --reverse --delete --verbose \
+                   --exclude '^data/' \
+                   --exclude '^cache/' \
+                   --exclude '^config\.php$' \
+                   --exclude '^\.htpasswd$' \
+                   dist/ /
+          "
