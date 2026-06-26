@@ -71,7 +71,20 @@ serveur :
 1. Configurer les variables et secrets GitHub dans l'environnement `preprod`
    (voir tableau ci-dessus).
 2. Créer les dossiers `data/` et `cache/` sur le serveur (via FTP ou panneau
-   OVH). La base SQLite est initialisée automatiquement au premier démarrage.
+   OVH) et leur donner les permissions `705` :
+   ```bash
+   source .env
+   curl -s --ftp-create-dirs "ftp://$FTP_USER:$FTP_PASSWORD@$FTP_HOST:$FTP_PORT/data/"
+   curl -s --ftp-create-dirs "ftp://$FTP_USER:$FTP_PASSWORD@$FTP_HOST:$FTP_PORT/cache/"
+   ```
+   > **OVHcloud** : les permissions `705` sont requises pour que PHP puisse
+   > écrire dans ces dossiers. Les régler via le gestionnaire de fichiers OVH
+   > ou `chmod 705 data/ cache/` si SSH est disponible.
+   >
+   > SQLite crée également des fichiers temporaires (`-wal`, `-shm`) dans
+   > `data/` — le dossier doit rester accessible en écriture en permanence.
+   >
+   > La base SQLite est initialisée automatiquement au premier démarrage.
 3. Créer le fichier `.htpasswd` pour protéger l'interface d'administration :
    ```bash
    # Créer le fichier avec un premier utilisateur
