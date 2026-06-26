@@ -34,7 +34,7 @@ nom réel requis. Toutes les données restent sur votre propre hébergement.
 ## Prérequis
 
 - PHP 8.2+ (extension `intl` recommandée pour les dates localisées)
-- Hébergement web avec accès FTP — compatible OVH mutualisé et équivalents
+- Hébergement web avec accès FTP — compatible [OVHcloud Web Hosting](https://www.ovhcloud.com/fr/web-hosting/) (offre gratuite incluse avec un nom de domaine) et équivalents
 - Un agenda Google Calendar public (ou tout flux iCal)
 
 Pas de base de données serveur requise : les données sont stockées dans un
