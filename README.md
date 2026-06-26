@@ -40,6 +40,12 @@ nom réel requis. Toutes les données restent sur votre propre hébergement.
 Pas de base de données serveur requise : les données sont stockées dans un
 fichier SQLite.
 
+> **Hébergement mutualisé gratuit (ex. OVHcloud inclus avec un nom de domaine) :**
+> l'espace disque est généralement limité à 100 Mo, partagé entre tous les
+> sites et applications hébergés sur le même compte. SPS occupe moins de 5 Mo
+> (assets, PHP, base de données), mais si d'autres applications cohabitent sur
+> le même hébergement, leur espace s'impute sur le même quota.
+
 ## Installation
 
 ### 1. Cloner le dépôt
