@@ -31,18 +31,18 @@ await waitForServer('http://127.0.0.1:8765/');
 
 const browser = await chromium.launch();
 const page    = await browser.newPage();
-await page.setViewportSize({ width: 1280, height: 800 });
+await page.setViewportSize({ width: 390, height: 844 }); // iPhone 14
 
 try {
     console.log('Capturing pointage page…');
     await page.goto('http://127.0.0.1:8765/', { waitUntil: 'load' });
     await page.waitForTimeout(300);
-    await page.screenshot({ path: `${out}/pointage.png` });
+    await page.screenshot({ path: `${out}/pointage.png`, fullPage: true });
 
     console.log('Capturing admin page…');
     await page.goto('http://127.0.0.1:8765/admin/', { waitUntil: 'load' });
     await page.waitForTimeout(300);
-    await page.screenshot({ path: `${out}/admin.png` });
+    await page.screenshot({ path: `${out}/admin.png`, fullPage: true });
 
     console.log(`Screenshots saved to ${out}`);
 } finally {
