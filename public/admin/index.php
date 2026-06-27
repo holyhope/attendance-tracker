@@ -187,13 +187,6 @@ if ($sessionUid) {
             <?php endforeach ?>
           </select>
           <button type="submit" class="btn btn-outline-secondary" id="btn-voir"><?= htmlspecialchars($t['view']) ?></button>
-          <form method="GET" action="/api/admin/checkins.php" class="d-flex gap-1 ms-auto">
-            <select name="format" class="form-select" style="width:auto">
-              <option value="grist">Grist</option>
-              <option value="csv">CSV</option>
-            </select>
-            <button type="submit" class="btn btn-outline-secondary"><?= htmlspecialchars($t['export']) ?></button>
-          </form>
         </div>
         <?php if ($showVenue): ?>
         <?= $showLink ? '<a' : '<span' ?> id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block"<?= $showLink ? ' href="#"' : '' ?>>
@@ -212,6 +205,19 @@ if ($sessionUid) {
         <?php endif ?>
         <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px"></div><?php endif ?>
         <?php endif ?>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="GET" action="/api/admin/checkins.php" class="d-flex gap-2 align-items-center">
+        <label class="form-label mb-0"><?= htmlspecialchars($t['export']) ?></label>
+        <select name="format" class="form-select" style="width:auto">
+          <option value="grist">Grist</option>
+          <option value="csv">CSV</option>
+        </select>
+        <button type="submit" class="btn btn-outline-secondary"><?= htmlspecialchars($t['export']) ?></button>
       </form>
     </div>
   </div>
