@@ -41,7 +41,9 @@ jobs:
 
       - name: Generate screenshots
         run: |
+          echo "::group::playwright install"
           npx playwright install chromium --with-deps
+          echo "::endgroup::"
           npm run screenshots
           # Remove demo files from dist before packaging
           rm -f dist/config.php
