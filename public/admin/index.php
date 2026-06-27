@@ -253,8 +253,8 @@ if ($sessionUid) {
       <?php endforeach ?>
     </span>
     <a href="https://github.com/sponsors/holyhope" target="_blank" rel="noopener" class="text-secondary small">♥ Soutenir ce projet</a>
-    <span class="text-muted small d-none d-sm-inline"><?= $fmtBytes($dbSize) ?> · <?= $fmtBytes($cacheSize) ?></span>
-    <?php if ($version): ?><span class="text-muted small d-none d-sm-inline"><?= htmlspecialchars($version) ?></span><?php endif ?>
+    <span class="text-muted small"><?= $fmtBytes($dbSize) ?> · <?= $fmtBytes($cacheSize) ?></span>
+    <?php if ($version): ?><span class="text-muted small"><?= htmlspecialchars($version) ?></span><?php endif ?>
   </div>
 </footer>
 
