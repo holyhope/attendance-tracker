@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-$distDir  = rtrim(realpath($argv[1] ?? __DIR__ . '/../../dist'), '/');
+$rootDir  = realpath(__DIR__ . '/../../');
+$distDir  = rtrim(realpath($argv[1] ?? "$rootDir/dist"), '/');
 $icsPath  = realpath(__DIR__ . '/../fixtures/demo.ics');
 $dbPath   = "$distDir/data/demo.db";
 $cachePath = "$distDir/cache/demo.ics.cache";
@@ -13,6 +14,22 @@ foreach (['data', 'cache'] as $dir) {
 // Pre-populate the ICS cache so Calendar never makes a network call
 copy($icsPath, $cachePath);
 
+// Propagate icon_url from the real config if present
+$rootConfig = is_file("$rootDir/config.php") ? (require "$rootDir/config.php") : [];
+$iconUrl    = $rootConfig['icon_url'] ?? null;
+$iconLine   = '';
+if ($iconUrl !== null) {
+    // If the icon is a local path, copy the asset into dist/www/assets/
+    if (str_starts_with($iconUrl, '/')) {
+        $src = "$rootDir/public$iconUrl";
+        if (is_file($src)) {
+            $dest = "$distDir/www/assets/" . basename($iconUrl);
+            copy($src, $dest);
+        }
+    }
+    $iconLine = "\n    'icon_url'             => " . var_export($iconUrl, true) . ',';
+}
+
 $configContent = <<<PHP
 <?php
 return [
@@ -21,7 +38,7 @@ return [
     'cache_path'           => '$cachePath',
     'calendar_url'         => 'file://$icsPath',
     'session_label_format' => '{date:EEEE d MMMM yyyy}',
-    'show_location'        => false,
+    'show_location'        => false,$iconLine
 ];
 PHP;
 file_put_contents("$distDir/config.php", $configContent);

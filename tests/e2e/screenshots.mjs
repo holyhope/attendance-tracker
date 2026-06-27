@@ -10,6 +10,9 @@ const out  = resolve(root, 'screenshots');
 
 mkdirSync(out, { recursive: true });
 
+// Sync public/ → dist/www/ so screenshots always reflect current source
+execSync(`rsync -a --delete ${root}/public/ ${dist}/www/`, { stdio: 'inherit' });
+
 // Prepare demo environment in dist/
 console.log('Setting up demo environment…');
 execSync(`php ${root}/tests/e2e/setup.php ${dist}`, { stdio: 'inherit' });
