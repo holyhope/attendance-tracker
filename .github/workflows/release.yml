@@ -99,7 +99,19 @@ jobs:
           sed -i "s|%%HTPASSWD_PATH%%|${HTPASSWD_PATH}|" dist/www/api/admin/.htaccess
           ICON_URL='${{ vars.ICON_URL }}'
           ICON_LINE=''
-          [ -n "$ICON_URL" ] && ICON_LINE="              'icon_url' => '$ICON_URL',"
+          if [ -n "$ICON_URL" ]; then
+            case "$ICON_URL" in
+              http://*|https://*)
+                EXT="${ICON_URL##*.}"
+                LOCAL_ICON="/assets/icon-custom.${EXT}"
+                curl -fsSL "$ICON_URL" -o "dist/www/assets/icon-custom.${EXT}"
+                ICON_LINE="              'icon_url' => '$LOCAL_ICON',"
+                ;;
+              *)
+                ICON_LINE="              'icon_url' => '$ICON_URL',"
+                ;;
+            esac
+          fi
           cat > dist/config.php << PHP
           <?php
           return [
