@@ -150,7 +150,7 @@ if ($sessionUid) {
   data-i18n="<?= htmlspecialchars(json_encode($t), ENT_QUOTES) ?>">
 <header class="border-bottom bg-white py-2 px-3">
   <div class="d-flex align-items-center gap-2">
-    <a href="/" class="btn btn-outline-secondary btn-sm"><?= htmlspecialchars($t['back_home']) ?></a>
+    <a href="/" class="btn btn-outline-secondary btn-sm" aria-label="<?= htmlspecialchars($t['back_home']) ?>">←</a>
     <img src="/assets/icon.svg" alt="" width="24" height="24" class="ms-1">
     <span class="fw-semibold"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></span>
   </div>
