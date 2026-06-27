@@ -32,9 +32,9 @@ async function waitForServer(url, attempts = 20) {
 
 await waitForServer('http://127.0.0.1:8765/');
 
-const browser = await chromium.launch();
-const page    = await browser.newPage();
-await page.setViewportSize({ width: 390, height: 844 }); // iPhone 14
+const browser  = await chromium.launch();
+const context  = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
+const page     = await context.newPage();
 
 try {
     console.log('Capturing pointage page…');
