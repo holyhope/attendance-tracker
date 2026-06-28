@@ -141,4 +141,5 @@ jobs:
                    --exclude '^config\.php$' \
                    --exclude '^\.htpasswd$' \
                    dist/ /
+            put dist/config.php -o /config.php
           "
