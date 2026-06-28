@@ -138,8 +138,6 @@ jobs:
             mirror --reverse --delete --verbose \
                    --exclude '^data/' \
                    --exclude '^cache/' \
-                   --exclude '^config\.php$' \
                    --exclude '^\.htpasswd$' \
                    dist/ /
-            put dist/config.php -o /config.php
           "
