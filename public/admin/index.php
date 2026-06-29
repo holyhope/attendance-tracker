@@ -40,10 +40,12 @@ $fmtBytes = function(int|false $bytes): string {
     return round($bytes) . ' To';
 };
 $iconUrl       = $config['icon_url'] ?? '/assets/icon.svg';
-$siteUrl       = $config['site_url']  ?? null;
-$navLinks      = $config['nav_links'] ?? [];
+$siteUrl       = $config['site_url']     ?? null;
+$navLinks      = $config['nav_links']    ?? [];
 $hasNav        = $siteUrl !== null || !empty($navLinks);
+$customCssUrl  = $config['custom_css_url'] ?? null;
 $safeUrl       = fn(?string $url): string => ($url && preg_match('#^https?://#', $url)) ? $url : '#';
+$safeCssUrl    = fn(?string $url): ?string => ($url && preg_match('#^(https?://|/)#', $url)) ? $url : null;
 $dbPath        = dirname($config['db_dsn'] === '' ? '' : str_replace('sqlite:', '', $config['db_dsn']));
 $dbSize        = file_exists(str_replace('sqlite:', '', $config['db_dsn'])) ? filesize(str_replace('sqlite:', '', $config['db_dsn'])) : false;
 $cacheSize     = file_exists($config['cache_path']) ? filesize($config['cache_path']) : false;
@@ -148,6 +150,7 @@ if ($sessionUid) {
   <link rel="apple-touch-icon" href="<?= htmlspecialchars($iconUrl) ?>">
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/assets/bootstrap.min.css">
+  <?php if ($safeCssUrl($customCssUrl)): ?><link rel="stylesheet" href="<?= htmlspecialchars($customCssUrl) ?>"><?php endif ?>
   <?php if ($showMap): ?><link rel="stylesheet" href="/assets/leaflet.min.css"><?php endif ?>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100"

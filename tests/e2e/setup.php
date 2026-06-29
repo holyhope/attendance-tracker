@@ -16,7 +16,7 @@ copy($icsPath, $cachePath);
 
 // Propagate optional keys from the real config
 $rootConfig  = is_file("$rootDir/config.php") ? (require "$rootDir/config.php") : [];
-$optionalKeys = ['icon_url', 'site_url', 'nav_links'];
+$optionalKeys = ['icon_url', 'custom_css_url', 'site_url', 'nav_links'];
 $extraLines  = '';
 foreach ($optionalKeys as $key) {
     if (!array_key_exists($key, $rootConfig)) continue;
