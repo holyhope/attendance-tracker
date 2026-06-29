@@ -40,6 +40,10 @@ $fmtBytes = function(int|false $bytes): string {
     return round($bytes) . ' To';
 };
 $iconUrl       = $config['icon_url'] ?? '/assets/icon.svg';
+$siteUrl       = $config['site_url']  ?? null;
+$navLinks      = $config['nav_links'] ?? [];
+$hasNav        = $siteUrl !== null || !empty($navLinks);
+$safeUrl       = fn(?string $url): string => ($url && preg_match('#^https?://#', $url)) ? $url : '#';
 $dbPath        = dirname($config['db_dsn'] === '' ? '' : str_replace('sqlite:', '', $config['db_dsn']));
 $dbSize        = file_exists(str_replace('sqlite:', '', $config['db_dsn'])) ? filesize(str_replace('sqlite:', '', $config['db_dsn'])) : false;
 $cacheSize     = file_exists($config['cache_path']) ? filesize($config['cache_path']) : false;
@@ -152,7 +156,23 @@ if ($sessionUid) {
   data-show-location="<?= htmlspecialchars(json_encode($showLocation)) ?>"
   data-session-coords="<?= htmlspecialchars(json_encode($sessionCoords), ENT_QUOTES) ?>"
   data-i18n="<?= htmlspecialchars(json_encode($t), ENT_QUOTES) ?>">
-<header class="border-bottom bg-white px-3" style="padding-top: calc(0.5rem + env(safe-area-inset-top)); padding-bottom: 0.5rem">
+<?php if ($hasNav): ?>
+<nav class="bg-white border-bottom px-3 small" style="padding-top: calc(0.25rem + env(safe-area-inset-top)); padding-bottom: 0.25rem">
+  <div class="d-flex align-items-center gap-3">
+    <?php if ($siteUrl): ?>
+    <a href="<?= htmlspecialchars($safeUrl($siteUrl)) ?>" class="text-secondary text-decoration-none">← <?= htmlspecialchars($config['association_name']) ?></a>
+    <?php endif ?>
+    <?php if ($navLinks): ?>
+    <div class="d-flex gap-3 <?= $siteUrl ? 'ms-auto' : '' ?>">
+      <?php foreach ($navLinks as $link): ?>
+      <a href="<?= htmlspecialchars($safeUrl($link['url'] ?? '')) ?>" class="text-secondary text-decoration-none"><?= htmlspecialchars($link['label'] ?? '') ?></a>
+      <?php endforeach ?>
+    </div>
+    <?php endif ?>
+  </div>
+</nav>
+<?php endif ?>
+<header class="border-bottom bg-white px-3" style="padding-top: <?= $hasNav ? '0.5rem' : 'calc(0.5rem + env(safe-area-inset-top))' ?>; padding-bottom: 0.5rem">
   <div class="d-flex align-items-center gap-2" style="min-height:44px">
     <a href="/" class="btn btn-outline-secondary" style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center" aria-label="<?= htmlspecialchars($t['back_home']) ?>">←</a>
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24" class="ms-1">
