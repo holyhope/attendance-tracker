@@ -13,3 +13,6 @@ public/assets/app.js
 public/assets/admin.js
 public/assets/apple-touch-icon.png
 public/assets/logo.*
+dist/
+dist.zip
+screenshots/
