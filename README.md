@@ -80,6 +80,30 @@ libellés de séance (`session_label_format`), affichage du lieu (`show_location
 : `false`, `true`, `'only_link'`, `'with_map'`), filtre des événements
 (`event_filter`) et durée de cache iCal (`cache_ttl`).
 
+### Intégration dans un écosystème existant
+
+Ces clés optionnelles permettent d'intégrer l'application dans le site de
+l'association sans modifier le code :
+
+| Clé | Description |
+|-----|-------------|
+| `icon_url` | Logo affiché dans le header, le favicon et le manifest PWA. Chemin local (`/assets/logo.png`) ou URL externe. |
+| `custom_css_url` | Feuille de style chargée après Bootstrap. Chemin local ou URL `https://`. |
+| `site_url` | URL du site de l'association. Affiche un lien « ← Nom » au-dessus du header. |
+| `nav_links` | Tableau de liens `[['label' => '...', 'url' => '...']]` affichés dans la barre de navigation. |
+
+Exemple :
+
+```php
+'icon_url'       => '/assets/logo.png',
+'custom_css_url' => '/assets/custom.css',
+'site_url'       => 'https://mon-asso.fr',
+'nav_links'      => [
+    ['label' => 'Agenda',  'url' => 'https://mon-asso.fr/agenda'],
+    ['label' => 'Contact', 'url' => 'https://mon-asso.fr/contact'],
+],
+```
+
 ### 3. Initialiser la base de données
 
 La base est **auto-migrée au premier démarrage** : les tables sont créées

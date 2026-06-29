@@ -16,6 +16,11 @@ Toutes les valeurs sont configurées dans l'environnement GitHub `preprod` :
 | Secret | `FTP_PASSWORD` | Mot de passe FTP OVH |
 | Variable | `ASSOCIATION_NAME` | Nom de l'association affiché dans l'interface |
 | Secret | `CALENDAR_URL` | URL iCal de l'agenda (contient l'ID de calendrier) |
+| Variable | `ICON_URL` | *(optionnel)* URL du logo de l'association (téléchargé localement au déploiement) |
+| Variable | `CUSTOM_CSS_URL` | *(optionnel)* URL ou chemin local d'une feuille de style personnalisée |
+| Variable | `SITE_URL` | *(optionnel)* URL du site de l'association (lien « ← Nom » au-dessus du header) |
+
+> **`nav_links`** est un tableau PHP et ne peut pas être passé comme variable GitHub. Le configurer directement dans `config.php` en déploiement manuel, ou l'ajouter dans le step « Inject environment config » du pipeline.
 
 ### Fichiers gérés manuellement sur le serveur
 

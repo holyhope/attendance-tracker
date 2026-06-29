@@ -114,6 +114,12 @@ jobs:
                 ;;
             esac
           fi
+          SITE_URL='${{ vars.SITE_URL }}'
+          SITE_LINE=''
+          [ -n "$SITE_URL" ] && SITE_LINE="              'site_url' => '$SITE_URL',"
+          CUSTOM_CSS_URL='${{ vars.CUSTOM_CSS_URL }}'
+          CSS_LINE=''
+          [ -n "$CUSTOM_CSS_URL" ] && CSS_LINE="              'custom_css_url' => '$CUSTOM_CSS_URL',"
           cat > dist/config.php << PHP
           <?php
           return [
@@ -124,6 +130,8 @@ jobs:
               'session_label_format' => '{date:EEEE d MMMM yyyy}',
               'show_location'        => 'with_map',
           $ICON_LINE
+          $SITE_LINE
+          $CSS_LINE
           ];
           PHP
 
