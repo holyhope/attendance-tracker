@@ -43,10 +43,6 @@ $iconUrl       = $config['icon_url'] ?? '/assets/icon.svg';
 $customCssUrl  = $config['custom_css_url'] ?? null;
 $safeUrl       = fn(?string $url): string => ($url && preg_match('#^(https?://|/)#', $url)) ? $url : '#';
 $safeCssUrl    = fn(?string $url): ?string => ($url && preg_match('#^(https?://|/)#', $url)) ? $url : null;
-$siteUrl       = $config['site_url']  ?? null;
-$allNavItems   = [];
-if ($siteUrl) $allNavItems[] = ['label' => '← ' . $config['association_name'], 'url' => $siteUrl];
-foreach ($config['nav_links'] ?? [] as $link) $allNavItems[] = $link;
 $dbPath        = dirname($config['db_dsn'] === '' ? '' : str_replace('sqlite:', '', $config['db_dsn']));
 $dbSize        = file_exists(str_replace('sqlite:', '', $config['db_dsn'])) ? filesize(str_replace('sqlite:', '', $config['db_dsn'])) : false;
 $cacheSize     = file_exists($config['cache_path']) ? filesize($config['cache_path']) : false;
@@ -165,18 +161,6 @@ if ($sessionUid) {
     <a href="/" class="btn btn-outline-secondary" style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center" aria-label="<?= htmlspecialchars($t['back_home']) ?>">←</a>
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24" class="ms-1">
     <span class="fw-semibold"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></span>
-    <?php if (count($allNavItems) === 1): ?>
-    <a href="<?= htmlspecialchars($safeUrl($allNavItems[0]['url'] ?? '')) ?>" class="ms-auto text-secondary text-decoration-none small"><?= htmlspecialchars($allNavItems[0]['label'] ?? '') ?></a>
-    <?php elseif (count($allNavItems) > 1): ?>
-    <details class="ms-auto position-relative">
-      <summary class="btn btn-outline-secondary" style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">☰</summary>
-      <div class="position-absolute end-0 top-100 bg-white border rounded shadow-sm py-1 mt-1" style="min-width:160px;z-index:1000">
-        <?php foreach ($allNavItems as $item): ?>
-        <a href="<?= htmlspecialchars($safeUrl($item['url'] ?? '')) ?>" class="d-block px-3 py-2 text-secondary text-decoration-none small"><?= htmlspecialchars($item['label'] ?? '') ?></a>
-        <?php endforeach ?>
-      </div>
-    </details>
-    <?php endif ?>
   </div>
 </header>
 <main class="flex-grow-1 py-4 px-3 mx-auto w-100" style="max-width:680px">
