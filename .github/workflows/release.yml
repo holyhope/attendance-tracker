@@ -52,15 +52,8 @@ jobs:
       - name: Zip dist
         run: cd dist && zip -r ../dist.zip .
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: |
-            dist.zip
-            screenshots/*.png
-          generate_release_notes: true
-
       - name: Push screenshots to branch
+        id: screenshots
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
@@ -77,9 +70,18 @@ jobs:
           git add *.png
           git diff --cached --quiet || git commit -m "screenshots: ${{ github.ref_name }}"
           git push origin HEAD:screenshots
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
           cd $GITHUB_WORKSPACE
           git worktree remove --force /tmp/sc
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist.zip
+          body: |
+            [📸 Screenshots (${{ github.ref_name }})](https://github.com/${{ github.repository }}/tree/${{ steps.screenshots.outputs.sha }})
+          generate_release_notes: true
 
   deploy-preprod:
     needs: release
