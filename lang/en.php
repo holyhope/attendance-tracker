@@ -25,7 +25,7 @@ return [
     'export'         => 'Export',
     'view'           => 'View',
     'nickname_col'   => 'Nickname',
-    'date_col'       => 'Date',
+    'date_col'       => 'Check-in date',
     'delete'         => 'Delete',
     'deleted'        => 'Entry deleted.',
     'delete_confirm'       => 'Delete this entry?',

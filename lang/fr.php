@@ -41,7 +41,7 @@ return [
     'export'         => 'Exporter',
     'view'           => 'Voir',
     'nickname_col'   => 'Pseudonyme',
-    'date_col'       => 'Date',
+    'date_col'       => 'Date de pointage',
     'delete'         => 'Supprimer',
     'deleted'        => 'Entrée supprimée.',
     'delete_confirm'       => 'Supprimer cette entrée ?',
