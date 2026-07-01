@@ -196,7 +196,7 @@ if ($sessionUid) {
   data-i18n="<?= htmlspecialchars(json_encode($t), ENT_QUOTES) ?>">
 <header class="border-bottom bg-white px-3" style="padding-top: calc(0.5rem + env(safe-area-inset-top)); padding-bottom: 0.5rem">
   <div class="d-flex align-items-center gap-2" style="min-height:44px">
-    <a href="/" class="btn btn-outline-secondary" style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center" aria-label="<?= htmlspecialchars($t['back_home_label']) ?>"><span aria-hidden="true">←</span></a>
+    <a href="/" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" style="min-height:44px;min-width:44px" aria-label="<?= htmlspecialchars($t['back_home_label']) ?>"><span aria-hidden="true">←</span></a>
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24" class="ms-1">
     <h1 class="fw-semibold fs-6 mb-0"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></h1>
   </div>
@@ -206,7 +206,7 @@ if ($sessionUid) {
   <div class="card mb-3">
     <div class="card-body">
       <div id="feedback" role="alert" aria-live="assertive" aria-atomic="true"
-           class="alert<?= $feedback ? ' alert-' . $feedback['type'] : ' visually-hidden' ?>">
+           class="<?= $feedback ? 'alert alert-' . $feedback['type'] : 'visually-hidden' ?>">
         <?= $feedback ? htmlspecialchars($feedback['msg']) : '' ?>
       </div>
 
@@ -242,7 +242,7 @@ if ($sessionUid) {
             class="d-block mt-1 small text-muted">📍 <?= htmlspecialchars($currentVenueName) ?></a>
         </noscript>
         <?php endif ?>
-        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px" aria-label="<?= htmlspecialchars($t['map_label']) ?>"></div><?php endif ?>
+        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px" role="region" aria-label="<?= htmlspecialchars($t['map_label']) ?>"></div><?php endif ?>
         <?php endif ?>
       </form>
     </div>
@@ -273,7 +273,7 @@ if ($sessionUid) {
           <td><?= htmlspecialchars($c['nickname']) ?></td>
           <td><?= htmlspecialchars((new DateTimeImmutable($c['created_at']))->format('d/m/Y')) ?></td>
           <td class="text-end">
-            <form method="POST" action="/admin/" style="display:inline">
+            <form method="POST" action="/admin/" class="d-inline">
               <input type="hidden" name="checkin_id" value="<?= htmlspecialchars($c['id']) ?>">
               <input type="hidden" name="session_uid" value="<?= htmlspecialchars($sessionUid) ?>">
               <button type="submit" class="btn btn-outline-danger btn-sm"><?= htmlspecialchars($t['delete']) ?></button>
@@ -289,7 +289,7 @@ if ($sessionUid) {
     <div class="card-body">
       <form method="GET" action="/api/admin/checkins.php" class="d-flex gap-2 align-items-center">
         <label class="form-label mb-0" for="export-format"><?= htmlspecialchars($t['export']) ?></label>
-        <select name="format" id="export-format" class="form-select" style="width:auto">
+        <select name="format" id="export-format" class="form-select w-auto">
           <option value="grist">Grist</option>
           <option value="csv">CSV</option>
         </select>
@@ -308,7 +308,7 @@ if ($sessionUid) {
           <?php if ($code === $lang): ?>
             <span aria-label="<?= htmlspecialchars($langName[$code]) ?>" aria-current="true" style="opacity:.4;cursor:default"><?= $langFlag[$code] ?></span>
           <?php else: ?>
-            <a href="<?= htmlspecialchars($langUrlFor($code)) ?>" aria-label="<?= htmlspecialchars($langName[$code]) ?>" style="text-decoration:none"><?= $langFlag[$code] ?></a>
+            <a href="<?= htmlspecialchars($langUrlFor($code)) ?>" aria-label="<?= htmlspecialchars($langName[$code]) ?>" class="text-decoration-none"><?= $langFlag[$code] ?></a>
           <?php endif ?>
         <?php endforeach ?>
       </nav>

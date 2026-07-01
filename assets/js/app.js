@@ -35,7 +35,7 @@ function showFeedback(msg, type) {
   el.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
   clearTimeout(el._timer);
   el._timer = setTimeout(() => {
-    el.className = 'alert visually-hidden';
+    el.className = 'visually-hidden';
     el.textContent = '';
   }, 4000);
 }

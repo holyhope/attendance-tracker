@@ -185,7 +185,7 @@ if ($showLink) {
     <a href="<?= htmlspecialchars($safeUrl($allNavItems[0]['url'] ?? '')) ?>" class="ms-auto text-secondary text-decoration-none small"><?= htmlspecialchars($allNavItems[0]['label'] ?? '') ?></a>
     <?php elseif (count($allNavItems) > 1): ?>
     <details class="ms-auto position-relative">
-      <summary class="btn btn-outline-secondary" aria-label="<?= htmlspecialchars($t['nav_menu_label']) ?>" style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><span aria-hidden="true">☰</span></summary>
+      <summary class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="<?= htmlspecialchars($t['nav_menu_label']) ?>" style="min-height:44px;min-width:44px;cursor:pointer"><span aria-hidden="true">☰</span></summary>
       <div class="position-absolute end-0 top-100 bg-white border rounded shadow-sm py-1 mt-1" style="min-width:160px;z-index:1000">
         <?php foreach ($allNavItems as $item): ?>
         <a href="<?= htmlspecialchars($safeUrl($item['url'] ?? '')) ?>" class="d-block px-3 py-2 text-secondary text-decoration-none small"><?= htmlspecialchars($item['label'] ?? '') ?></a>
@@ -199,7 +199,7 @@ if ($showLink) {
 <div class="card w-100" style="max-width:420px">
   <div class="card-body">
     <div id="feedback" role="alert" aria-live="assertive" aria-atomic="true"
-         class="alert<?= $feedback ? ' alert-' . $feedback['type'] : ' visually-hidden' ?>">
+         class="<?= $feedback ? 'alert alert-' . $feedback['type'] : 'visually-hidden' ?>">
       <?= $feedback ? htmlspecialchars($feedback['msg']) : '' ?>
     </div>
 
@@ -232,7 +232,7 @@ if ($showLink) {
             class="d-block mt-1 small text-muted">📍 <?= htmlspecialchars($currentVenueName) ?></a>
         </noscript>
         <?php endif ?>
-        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px" aria-label="<?= htmlspecialchars($t['map_label']) ?>"></div><?php endif ?>
+        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px" role="region" aria-label="<?= htmlspecialchars($t['map_label']) ?>"></div><?php endif ?>
         <div id="session-status" aria-live="polite" class="visually-hidden"></div>
         <?php endif ?>
       </div>
@@ -269,7 +269,7 @@ if ($showLink) {
           <?php if ($code === $lang): ?>
             <span aria-label="<?= htmlspecialchars($langName[$code]) ?>" aria-current="true" style="opacity:.4;cursor:default"><?= $langFlag[$code] ?></span>
           <?php else: ?>
-            <a href="<?= htmlspecialchars($langUrlFor($code)) ?>" aria-label="<?= htmlspecialchars($langName[$code]) ?>" style="text-decoration:none"><?= $langFlag[$code] ?></a>
+            <a href="<?= htmlspecialchars($langUrlFor($code)) ?>" aria-label="<?= htmlspecialchars($langName[$code]) ?>" class="text-decoration-none"><?= $langFlag[$code] ?></a>
           <?php endif ?>
         <?php endforeach ?>
       </nav>
