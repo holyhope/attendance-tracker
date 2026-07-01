@@ -180,7 +180,7 @@ if ($showLink) {
 <header class="border-bottom bg-white px-3" style="padding-top: calc(0.5rem + env(safe-area-inset-top)); padding-bottom: 0.5rem">
   <div class="d-flex align-items-center gap-2" style="min-height:44px">
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24">
-    <h1 class="fw-semibold fs-6 mb-0"><?= htmlspecialchars($title) ?></h1>
+    <h1 class="fw-semibold fs-6 mb-0 text-truncate" style="min-width:0"><?= htmlspecialchars($title) ?></h1>
     <?php if (count($allNavItems) === 1): ?>
     <a href="<?= htmlspecialchars($safeUrl($allNavItems[0]['url'] ?? '')) ?>" class="ms-auto text-secondary text-decoration-none small"><?= htmlspecialchars($allNavItems[0]['label'] ?? '') ?></a>
     <?php elseif (count($allNavItems) > 1): ?>

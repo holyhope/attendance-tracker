@@ -109,7 +109,7 @@ function makeCheckinRow(c, highlight = false) {
     tr.className = 'row-highlight';
     tr.addEventListener('animationend', () => tr.classList.remove('row-highlight'), { once: true });
   }
-  const tdName = document.createElement('td'); tdName.textContent = c.nickname;
+  const tdName = document.createElement('td'); tdName.className = 'text-truncate'; tdName.textContent = c.nickname;
   const tdDate = document.createElement('td'); tdDate.className = 'd-none d-sm-table-cell'; tdDate.textContent = date;
   const tdAct  = document.createElement('td'); tdAct.className = 'text-end'; tdAct.appendChild(form);
   tr.append(tdName, tdDate, tdAct);

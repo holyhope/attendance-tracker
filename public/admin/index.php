@@ -198,7 +198,7 @@ if ($sessionUid) {
   <div class="d-flex align-items-center gap-2" style="min-height:44px">
     <a href="/" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" style="min-height:44px;min-width:44px" aria-label="<?= htmlspecialchars($t['back_home_label']) ?>"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24" class="ms-1">
-    <h1 class="fw-semibold fs-6 mb-0"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></h1>
+    <h1 class="fw-semibold fs-6 mb-0 text-truncate" style="min-width:0"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></h1>
   </div>
 </header>
 <main class="flex-grow-1 py-4 container">
@@ -269,10 +269,15 @@ if ($sessionUid) {
         </div>
       </form>
     </div>
-    <table class="table table-hover table-striped mb-0">
+    <table class="table table-hover table-striped mb-0" style="table-layout:fixed">
+      <colgroup>
+        <col>
+        <col class="d-none d-sm-table-cell" style="width:8rem">
+        <col style="width:7rem">
+      </colgroup>
       <thead class="table-light">
         <tr>
-          <th scope="col"><?= htmlspecialchars($t['nickname_col']) ?></th>
+          <th scope="col" class="text-truncate"><?= htmlspecialchars($t['nickname_col']) ?></th>
           <th scope="col" class="d-none d-sm-table-cell"><?= htmlspecialchars($t['date_col']) ?></th>
           <th scope="col"><span class="visually-hidden"><?= htmlspecialchars($t['actions_col']) ?></span></th>
         </tr>
@@ -280,7 +285,7 @@ if ($sessionUid) {
       <tbody id="tbody">
         <?php foreach ($checkins as $c): ?>
         <tr<?= ($newlyAdded !== null && $c['nickname'] === $newlyAdded) ? ' class="row-highlight"' : '' ?>>
-          <td><?= htmlspecialchars($c['nickname']) ?></td>
+          <td class="text-truncate"><?= htmlspecialchars($c['nickname']) ?></td>
           <td class="d-none d-sm-table-cell"><?= htmlspecialchars((new DateTimeImmutable($c['created_at']))->format('d/m/Y')) ?></td>
           <td class="text-end">
             <form method="POST" action="/admin/" class="d-inline">
