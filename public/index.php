@@ -204,7 +204,7 @@ if ($showLink) {
       <?= $feedback ? htmlspecialchars($feedback['msg']) : '' ?>
     </div>
 
-    <form method="POST" action="" id="checkin-form">
+    <form method="POST" action="" id="checkin-form" novalidate>
       <div class="mb-3">
         <label for="session" class="form-label"><?= $t['session_label'] ?></label>
         <select id="session" name="session_uid" class="form-select" required>
@@ -243,6 +243,7 @@ if ($showLink) {
         <input id="nickname" name="nickname" type="text" class="form-control"
                autocomplete="off" placeholder="<?= $t['nickname_ph'] ?>"
                list="suggestions" value="<?= htmlspecialchars($savedNickname) ?>" required>
+        <div class="invalid-feedback"><?= htmlspecialchars($t['fill_nickname']) ?></div>
         <datalist id="suggestions"></datalist>
       </div>
 

@@ -152,11 +152,34 @@ window.addEventListener('popstate', ({ state }) => {
     .then(({ checkins = [] }) => renderCheckins(checkins));
 });
 
+function setInputInvalid(input, feedback, msg) {
+  input.classList.add('is-invalid');
+  if (feedback) feedback.textContent = msg;
+}
+
+function clearInputInvalid(input) {
+  input.classList.remove('is-invalid');
+}
+
 document.getElementById('checkin-form').addEventListener('submit', async e => {
   e.preventDefault();
   const input    = document.getElementById('checkin-nickname');
+  const feedback = document.getElementById('checkin-nickname-feedback');
   const nickname = input.value.trim();
-  if (!nickname) return;
+
+  if (!nickname) {
+    setInputInvalid(input, feedback, t.fill_nickname || '');
+    return;
+  }
+
+  const existing = Array.from(document.querySelectorAll('#tbody td:first-child'))
+    .map(td => td.textContent.trim().toLowerCase());
+  if (existing.includes(nickname.toLowerCase())) {
+    setInputInvalid(input, feedback, t.already || '');
+    return;
+  }
+
+  clearInputInvalid(input);
 
   const res = await fetch('/api/admin/checkin.php', {
     method: 'POST',
@@ -173,7 +196,7 @@ document.getElementById('checkin-form').addEventListener('submit', async e => {
     showFeedback((t.checked_in || '{name}').replace('{name}', res.checkin.nickname), 'success');
   } else {
     const msg = res.error?.includes('Already') ? (t.already || res.error) : (t.err_generic || res.error);
-    showFeedback(msg, 'error');
+    setInputInvalid(input, feedback, msg);
   }
 });
 

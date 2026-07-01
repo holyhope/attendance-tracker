@@ -162,7 +162,13 @@ document.getElementById('checkin-form').addEventListener('submit', async e => {
   const sel        = document.getElementById('session');
   const sessionUid = sel.value;
 
-  if (!nickname) { showFeedback(t.fill_nickname, 'error'); return; }
+  if (!nickname) {
+    const input = document.getElementById('nickname');
+    input.classList.add('is-invalid');
+    showFeedback(t.fill_nickname, 'error');
+    return;
+  }
+  document.getElementById('nickname').classList.remove('is-invalid');
 
   if (action === 'cancel') {
     const res = await post('/api/cancel.php', { session_uid: sessionUid, nickname });
