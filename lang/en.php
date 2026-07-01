@@ -34,4 +34,7 @@ return [
     'lang_switcher_label'  => 'Language',
     'back_home_label'      => 'Back to home',
     'actions_col'          => 'Actions',
+    'confirm_delete'       => 'Confirm?',
+    'cancel_action'        => 'Cancel',
+    'map_label'            => 'Venue map',
 ];

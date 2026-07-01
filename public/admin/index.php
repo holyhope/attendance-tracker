@@ -198,7 +198,7 @@ if ($sessionUid) {
   <div class="d-flex align-items-center gap-2" style="min-height:44px">
     <a href="/" class="btn btn-outline-secondary" style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center" aria-label="<?= htmlspecialchars($t['back_home_label']) ?>"><span aria-hidden="true">←</span></a>
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24" class="ms-1">
-    <span class="fw-semibold"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></span>
+    <h1 class="fw-semibold fs-6 mb-0"><?= htmlspecialchars($t['admin_title']) ?> — <?= htmlspecialchars($config['association_name']) ?></h1>
   </div>
 </header>
 <main class="flex-grow-1 py-4 px-3 mx-auto w-100" style="max-width:680px">
@@ -228,7 +228,7 @@ if ($sessionUid) {
           <button type="submit" class="btn btn-outline-secondary" id="btn-voir"><?= htmlspecialchars($t['view']) ?></button>
         </div>
         <?php if ($showVenue): ?>
-        <?= $showLink ? '<a' : '<span' ?> id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block"<?= $showLink ? ' href="#"' : '' ?>>
+        <?= $showLink ? '<a' : '<span' ?> id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block"<?= $showLink ? ' href="#" tabindex="-1"' : '' ?>>
           <span id="venue-name"></span>
           <?php if ($showMap): ?>
           <small id="map-notice" class="d-none d-block" style="font-size:.75em">
@@ -242,7 +242,7 @@ if ($sessionUid) {
             class="d-block mt-1 small text-muted">📍 <?= htmlspecialchars($currentVenueName) ?></a>
         </noscript>
         <?php endif ?>
-        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px"></div><?php endif ?>
+        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px" aria-label="<?= htmlspecialchars($t['map_label']) ?>"></div><?php endif ?>
         <?php endif ?>
       </form>
     </div>

@@ -16,6 +16,8 @@ function updateButtons(sessionUid) {
   const checked = checkedUids.includes(sessionUid);
   document.getElementById('btn-checkin').classList.toggle('d-none', checked);
   document.getElementById('btn-cancel').classList.toggle('d-none', !checked);
+  const status = document.getElementById('session-status');
+  if (status) status.textContent = checked ? (t.already || '') : '';
 }
 
 updateButtons(sessionSel.value);
@@ -138,8 +140,10 @@ function updateLocation(sel, uid) {
       el.href = `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lon}#map=15/${coords.lat}/${coords.lon}`;
       el.target = '_blank';
       el.rel = 'noopener';
+      el.tabIndex = 0;
     } else {
       el.removeAttribute('href');
+      el.tabIndex = -1;
     }
   }
 }

@@ -180,7 +180,7 @@ if ($showLink) {
 <header class="border-bottom bg-white px-3" style="padding-top: calc(0.5rem + env(safe-area-inset-top)); padding-bottom: 0.5rem">
   <div class="d-flex align-items-center gap-2" style="min-height:44px">
     <img src="<?= htmlspecialchars($iconUrl) ?>" alt="" width="24" height="24">
-    <span class="fw-semibold"><?= htmlspecialchars($title) ?></span>
+    <h1 class="fw-semibold fs-6 mb-0"><?= htmlspecialchars($title) ?></h1>
     <?php if (count($allNavItems) === 1): ?>
     <a href="<?= htmlspecialchars($safeUrl($allNavItems[0]['url'] ?? '')) ?>" class="ms-auto text-secondary text-decoration-none small"><?= htmlspecialchars($allNavItems[0]['label'] ?? '') ?></a>
     <?php elseif (count($allNavItems) > 1): ?>
@@ -218,7 +218,7 @@ if ($showLink) {
           <?php endforeach ?>
         </select>
         <?php if ($showVenue): ?>
-        <?= $showLink ? '<a' : '<span' ?> id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block"<?= $showLink ? ' href="#"' : '' ?>>
+        <?= $showLink ? '<a' : '<span' ?> id="session-location" class="d-none mt-1 small text-muted text-decoration-none d-block"<?= $showLink ? ' href="#" tabindex="-1"' : '' ?>>
           <span id="venue-name"></span>
           <?php if ($showMap): ?>
           <small id="map-notice" class="d-none d-block" style="font-size:.75em">
@@ -232,7 +232,8 @@ if ($showLink) {
             class="d-block mt-1 small text-muted">📍 <?= htmlspecialchars($currentVenueName) ?></a>
         </noscript>
         <?php endif ?>
-        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px"></div><?php endif ?>
+        <?php if ($showMap): ?><div id="map" class="d-none rounded mt-2" style="height:220px" aria-label="<?= htmlspecialchars($t['map_label']) ?>"></div><?php endif ?>
+        <div id="session-status" aria-live="polite" class="visually-hidden"></div>
         <?php endif ?>
       </div>
 

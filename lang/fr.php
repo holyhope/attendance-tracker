@@ -50,4 +50,7 @@ return [
     'lang_switcher_label'  => 'Langue',
     'back_home_label'      => 'Retour à l\'accueil',
     'actions_col'          => 'Actions',
+    'confirm_delete'       => 'Confirmer ?',
+    'cancel_action'        => 'Annuler',
+    'map_label'            => 'Carte du lieu',
 ];

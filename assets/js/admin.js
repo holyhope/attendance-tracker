@@ -63,8 +63,10 @@ function updateLocation(sel, uid) {
       el.href = `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lon}#map=15/${coords.lat}/${coords.lon}`;
       el.target = '_blank';
       el.rel = 'noopener';
+      el.tabIndex = 0;
     } else {
       el.removeAttribute('href');
+      el.tabIndex = -1;
     }
   }
 }
@@ -93,7 +95,9 @@ function makeCheckinRow(c, highlight = false) {
   form.style.display = 'inline';
   const inId  = document.createElement('input'); inId.type  = 'hidden'; inId.name  = 'checkin_id';  inId.value = c.id;
   const inSid = document.createElement('input'); inSid.type = 'hidden'; inSid.name = 'session_uid'; inSid.value = sessionUid;
-  const btn   = document.createElement('button'); btn.type = 'submit'; btn.className = 'btn btn-outline-danger btn-sm'; btn.textContent = t.delete || 'Supprimer';
+  const btn   = document.createElement('button'); btn.type = 'button'; btn.className = 'btn btn-outline-danger btn-sm';
+  btn.dataset.deleteId = c.id;
+  btn.textContent = t.delete || 'Supprimer';
   form.append(inId, inSid, btn);
 
   const tr = document.createElement('tr');
@@ -107,6 +111,15 @@ function makeCheckinRow(c, highlight = false) {
   tr.append(tdName, tdDate, tdAct);
   return tr;
 }
+
+// Upgrade server-rendered delete buttons (type=submit → type=button + data-delete-id)
+// so the two-step confirmation handler applies uniformly to all rows.
+document.querySelectorAll('#tbody [name="checkin_id"]').forEach(input => {
+  const btn = input.closest('form')?.querySelector('[type="submit"]');
+  if (!btn) return;
+  btn.type = 'button';
+  btn.dataset.deleteId = input.value;
+});
 
 function renderCheckins(checkins) {
   const tbody = document.getElementById('tbody');
@@ -164,21 +177,46 @@ document.getElementById('checkin-form').addEventListener('submit', async e => {
   }
 });
 
-document.getElementById('tbody').addEventListener('submit', async e => {
-  e.preventDefault();
-  if (!confirm(t.delete_confirm || 'Supprimer cette entrée ?')) return;
-  const checkinId = e.target.querySelector('[name="checkin_id"]').value;
-  const res = await fetch('/api/admin/delete.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ checkin_id: checkinId }),
-  }).then(r => r.json());
-  if (res.ok) {
-    e.target.closest('tr').remove();
-    const sel = document.getElementById('session');
-    sel.options[sel.selectedIndex].text =
-      sel.options[sel.selectedIndex].text.replace(/\((\d+)\)/, (_, n) => `(${Math.max(0, n - 1)})`);
-  } else {
-    showFeedback(res.error || t.err_generic || 'Erreur.', 'error');
+document.getElementById('tbody').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-delete-id], [data-confirm-delete]');
+  if (!btn) return;
+
+  if (btn.dataset.confirmDelete) {
+    // Second click — proceed with delete
+    const checkinId = btn.dataset.confirmDelete;
+    const res = await fetch('/api/admin/delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkin_id: checkinId }),
+    }).then(r => r.json());
+    if (res.ok) {
+      btn.closest('tr').remove();
+      const sel = document.getElementById('session');
+      sel.options[sel.selectedIndex].text =
+        sel.options[sel.selectedIndex].text.replace(/\((\d+)\)/, (_, n) => `(${Math.max(0, n - 1)})`);
+    } else {
+      showFeedback(res.error || t.err_generic || 'Erreur.', 'error');
+    }
+    return;
   }
+
+  // First click — enter confirmation state
+  const checkinId = btn.dataset.deleteId;
+  btn.removeAttribute('data-delete-id');
+  btn.dataset.confirmDelete = checkinId;
+  btn.textContent = t.confirm_delete || 'Confirmer ?';
+  btn.classList.replace('btn-outline-danger', 'btn-danger');
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'btn btn-outline-secondary btn-sm ms-1';
+  cancelBtn.textContent = t.cancel_action || 'Annuler';
+  cancelBtn.onclick = () => {
+    btn.removeAttribute('data-confirm-delete');
+    btn.dataset.deleteId = checkinId;
+    btn.textContent = t.delete || 'Supprimer';
+    btn.classList.replace('btn-danger', 'btn-outline-danger');
+    cancelBtn.remove();
+  };
+  btn.after(cancelBtn);
 });
