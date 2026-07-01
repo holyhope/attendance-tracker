@@ -65,9 +65,10 @@ jobs:
             git worktree add --orphan -b screenshots-deploy /tmp/sc
           fi
 
+          rm -f /tmp/sc/*.png
           cp screenshots/*.png /tmp/sc/
           cd /tmp/sc
-          git add *.png
+          git add -A
           git diff --cached --quiet || git commit -m "screenshots: ${{ github.ref_name }}"
           git push origin HEAD:screenshots
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
