@@ -267,7 +267,7 @@ if ($sessionUid) {
         </div>
       </form>
     </div>
-    <table class="table table-hover mb-0">
+    <table class="table table-hover table-striped mb-0">
       <thead class="table-light">
         <tr>
           <th scope="col"><?= htmlspecialchars($t['nickname_col']) ?></th>
