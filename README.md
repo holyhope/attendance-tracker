@@ -12,7 +12,7 @@ nom réel requis. Toutes les données restent sur votre propre hébergement.
 
 | Page de pointage | Page d'administration |
 |:---:|:---:|
-| ![Page de pointage](https://raw.githubusercontent.com/holyhope/attendance-tracker/screenshots/pointage.png) | ![Page d'administration](https://raw.githubusercontent.com/holyhope/attendance-tracker/screenshots/admin.png) |
+| ![Page de pointage](https://raw.githubusercontent.com/holyhope/attendance-tracker/screenshots/pointage-mobile.png) | ![Page d'administration](https://raw.githubusercontent.com/holyhope/attendance-tracker/screenshots/admin-mobile.png) |
 
 ---
 
